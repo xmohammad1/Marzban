@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   chakra,
   HStack,
   IconButton,
@@ -177,7 +178,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
                   </MenuItem>
                 </>
               )}
-              <Link to={DONATION_URL} target="_blank">
+              {/* <Link to={DONATION_URL} target="_blank">
                 <MenuItem
                   maxW="170px"
                   fontSize="sm"
@@ -190,7 +191,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
                     <NotificationCircle top="3" right="2" />
                   )}
                 </MenuItem>
-              </Link>
+              </Link> */}
               <Link to="/login">
                 <MenuItem maxW="170px" fontSize="sm" icon={<LogoutIcon />}>
                   {t("header.logout")}
@@ -226,7 +227,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
             {colorMode === "light" ? <DarkIcon /> : <LightIcon />}
           </IconButton>
 
-          <Box
+          {/* <Box
             css={{ direction: "ltr" }}
             display="flex"
             alignItems="center"
@@ -246,7 +247,17 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
             >
               Star
             </GitHubButton>
-          </Box>
+          </Box> */}
+            <Button
+            as="a"
+            href="https://t.me/Myseniors_bot?start=goto_mypanel"
+            target="_blank"
+            rel="noopener noreferrer"
+            size="sm"
+            variant="outline"
+            >
+            🤖
+            </Button>
         </HStack>
       </Box>
     </HStack>
