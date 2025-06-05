@@ -124,9 +124,9 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
       <Text as="h1" fontWeight="semibold" fontSize="2xl">
         {t("users")}
       </Text>
-      {showDonationNotif && (
+      {/* {showDonationNotif && (
         <NotificationCircle top="0" right="0" zIndex={9999} />
-      )}
+      )} */}
       <Box overflow="auto" css={{ direction: "rtl" }}>
         <HStack alignItems="center">
           <Menu>
