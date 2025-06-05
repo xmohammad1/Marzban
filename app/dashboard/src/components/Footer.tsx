@@ -7,7 +7,7 @@ export const Footer: FC<BoxProps> = (props) => {
   const { version } = useDashboard();
   return (
     <HStack w="full" py="0" position="relative" {...props}>
-      <Text
+{/*       <Text
         display="inline-block"
         flexGrow={1}
         textAlign="center"
@@ -22,7 +22,7 @@ export const Footer: FC<BoxProps> = (props) => {
         <Link color="blue.400" href={ORGANIZATION_URL}>
           Gozargah
         </Link>
-      </Text>
+      </Text> */}
     </HStack>
   );
 };
