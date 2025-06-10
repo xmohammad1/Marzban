@@ -482,8 +482,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                             )}
                           </HStack>
                         </FormControl>
-                        {!isEditing && (
-                          <FormControl flex="1">
+                        <FormControl flex="1">
                             <FormLabel whiteSpace={"nowrap"}>
                               {t("userDialog.onHold")}
                             </FormLabel>
@@ -514,7 +513,6 @@ export const UserDialog: FC<UserDialogProps> = () => {
                               }}
                             />
                           </FormControl>
-                        )}
                       </Flex>
                       <FormControl mb={"10px"}>
                         <FormLabel>{t("userDialog.dataLimit")}</FormLabel>
