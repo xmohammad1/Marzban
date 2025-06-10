@@ -482,39 +482,37 @@ export const UserDialog: FC<UserDialogProps> = () => {
                             )}
                           </HStack>
                         </FormControl>
-                        {!isEditing && (
-                          <FormControl flex="1">
-                            <FormLabel whiteSpace={"nowrap"}>
-                              {t("userDialog.onHold")}
-                            </FormLabel>
-                            <Controller
-                              name="status"
-                              control={form.control}
-                              render={({ field }) => {
-                                const status = field.value;
-                                return (
-                                  <>
-                                    {status ? (
-                                      <Switch
-                                        colorScheme="primary"
-                                        isChecked={status === "on_hold"}
-                                        onChange={(e) => {
-                                          if (e.target.checked) {
-                                            field.onChange("on_hold");
-                                          } else {
-                                            field.onChange("active");
-                                          }
-                                        }}
-                                      />
-                                    ) : (
-                                      ""
-                                    )}
-                                  </>
-                                );
-                              }}
-                            />
-                          </FormControl>
-                        )}
+                        <FormControl flex="1">
+                          <FormLabel whiteSpace={"nowrap"}>
+                            {t("userDialog.onHold")}
+                          </FormLabel>
+                          <Controller
+                            name="status"
+                            control={form.control}
+                            render={({ field }) => {
+                              const status = field.value;
+                              return (
+                                <>
+                                  {status ? (
+                                    <Switch
+                                      colorScheme="primary"
+                                      isChecked={status === "on_hold"}
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          field.onChange("on_hold");
+                                        } else {
+                                          field.onChange("active");
+                                        }
+                                      }}
+                                    />
+                                  ) : (
+                                    ""
+                                  )}
+                                </>
+                              );
+                            }}
+                          />
+                        </FormControl>
                       </Flex>
                       <FormControl mb={"10px"}>
                         <FormLabel>{t("userDialog.dataLimit")}</FormLabel>
