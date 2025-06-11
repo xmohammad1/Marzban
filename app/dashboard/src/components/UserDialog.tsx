@@ -220,9 +220,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const {
     editingUser,
     isCreatingNewUser,
-    isBulkCreating,
     onCreateUser,
-    onBulkCreate,
     editUser,
     fetchUserUsage,
     onEditingUser,
@@ -328,8 +326,8 @@ export const UserDialog: FC<UserDialogProps> = () => {
       });
 
     try {
-      if (isBulkCreating && !isEditing) {
-        const count = values.bulk_count || 1;
+      const count = values.bulk_count || 1;
+      if (!isEditing && count > 1) {
         for (let i = 0; i < count; i++) {
           const username = `${values.username}_${i + 1}`;
           // Ensure each user is created sequentially
@@ -364,7 +362,6 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const onClose = () => {
     form.reset(getDefaultValues());
     onCreateUser(false);
-    onBulkCreate(false);
     onEditingUser(null);
     setError(null);
     setUsageVisible(false);
@@ -535,7 +532,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                           </FormControl>
                         )}
                       </Flex>
-                      {!isEditing && isBulkCreating && (
+                      {!isEditing && (
                         <FormControl mb={"10px"}>
                           <FormLabel>{t("userDialog.bulkCount")}</FormLabel>
                           <Controller
