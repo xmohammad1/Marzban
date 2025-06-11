@@ -331,13 +331,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
       if (isBulkCreating && !isEditing) {
         const count = values.bulk_count || 1;
         for (let i = 0; i < count; i++) {
-          const match = values.username.match(/(\d+)$/);
-          const username =
-            i === 0
-              ? values.username
-              : match
-              ? values.username.replace(match[1], String(parseInt(match[1]) + i))
-              : values.username + (i + 1);
+          const username = `${values.username}_${i + 1}`;
           await createUser({ ...body, username });
         }
       } else {
