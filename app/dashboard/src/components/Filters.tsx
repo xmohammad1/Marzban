@@ -50,6 +50,8 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
     onFilterChange,
     refetchUsers,
     onCreateUser,
+    selectedUsers,
+    onDeletingSelectedUsers,
   } = useDashboard();
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
@@ -127,6 +129,14 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
               })}
             />
           </IconButton>
+          <Button
+            colorScheme="red"
+            size="sm"
+            isDisabled={selectedUsers.length === 0}
+            onClick={() => onDeletingSelectedUsers(true)}
+          >
+            {t("deleteSelected")}
+          </Button>
           <Button
             colorScheme="primary"
             size="sm"

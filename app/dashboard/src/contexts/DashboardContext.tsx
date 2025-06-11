@@ -50,10 +50,13 @@ type DashboardStateType = {
   isDeletingExpiredUsers: boolean;
   resetUsageUser: User | null;
   revokeSubscriptionUser: User | null;
+  selectedUsers: string[];
+  isDeletingSelectedUsers: boolean;
   isEditingCore: boolean;
   onCreateUser: (isOpen: boolean) => void;
   onEditingUser: (user: User | null) => void;
   onDeletingUser: (user: User | null) => void;
+  onDeletingSelectedUsers: (v: boolean) => void;
   onResetAllUsage: (isResetingAllUsage: boolean) => void;
   onDeletingExpiredUsers: (isDeletingExpiredUsers: boolean) => void;
   refetchUsers: () => void;
@@ -61,6 +64,10 @@ type DashboardStateType = {
   deleteExpiredUsers: (days: number) => Promise<string[]>;
   onFilterChange: (filters: Partial<FilterType>) => void;
   deleteUser: (user: User) => Promise<void>;
+  deleteSelectedUsers: () => Promise<void>;
+  toggleSelectedUser: (username: string) => void;
+  clearSelectedUsers: () => void;
+  setSelectedUsers: (users: string[]) => void;
   createUser: (user: UserCreate) => Promise<void>;
   editUser: (user: UserCreate) => Promise<void>;
   fetchUserUsage: (user: User, query: FilterUsageType) => Promise<void>;
@@ -120,6 +127,8 @@ export const useDashboard = create(
     isShowingNodesUsage: false,
     resetUsageUser: null,
     revokeSubscriptionUser: null,
+    selectedUsers: [],
+    isDeletingSelectedUsers: false,
     filters: {
       username: "",
       limit: getUsersPerPageLimitSize(),
@@ -169,10 +178,29 @@ export const useDashboard = create(
     setQRCode: (QRcodeLinks) => {
       set({ QRcodeLinks });
     },
+    toggleSelectedUser: (username) => {
+      const selected = new Set(get().selectedUsers);
+      if (selected.has(username)) selected.delete(username);
+      else selected.add(username);
+      set({ selectedUsers: Array.from(selected) });
+    },
+    clearSelectedUsers: () => set({ selectedUsers: [] }),
+    setSelectedUsers: (users) => set({ selectedUsers: Array.from(new Set(users)) }),
+    onDeletingSelectedUsers: (v) => set({ isDeletingSelectedUsers: v }),
     deleteUser: (user: User) => {
       set({ editingUser: null });
       return fetch(`/user/${user.username}`, { method: "DELETE" }).then(() => {
         set({ deletingUser: null });
+        get().refetchUsers();
+        queryClient.invalidateQueries(StatisticsQueryKey);
+      });
+    },
+    deleteSelectedUsers: () => {
+      const names = get().selectedUsers;
+      return Promise.all(
+        names.map((u) => fetch(`/user/${u}`, { method: "DELETE" }))
+      ).then(() => {
+        set({ selectedUsers: [] });
         get().refetchUsers();
         queryClient.invalidateQueries(StatisticsQueryKey);
       });

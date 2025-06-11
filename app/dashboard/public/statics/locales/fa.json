@@ -200,5 +200,10 @@
   "usersTable.noUser": "کاربری افزوده نشده است",
   "usersTable.noUserMatched": "به‌نظر میرسه کاربری که جستجو کردید، وجود ندارد",
   "usersTable.status": "وضعیت",
-  "usersTable.total": "مجموع"
+  "usersTable.total": "مجموع",
+  "deleteSelected": "حذف موارد انتخاب شده",
+  "deleteSelectedUsers.title": "حذف کاربران انتخاب شده",
+  "deleteSelectedUsers.prompt": "آیا از حذف {{count}} کاربر انتخاب شده مطمئن هستید؟",
+  "deleteSelectedUsers.success": "{{count}} کاربر حذف شد."
 }
+
