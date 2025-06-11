@@ -44,8 +44,14 @@ const setSearchField = debounce((search: string) => {
 }, 300);
 
 export const Filters: FC<FilterProps> = ({ ...props }) => {
-  const { loading, filters, onFilterChange, refetchUsers, onCreateUser, onBulkCreate } =
-    useDashboard();
+  const {
+    loading,
+    filters,
+    onFilterChange,
+    refetchUsers,
+    onCreateUser,
+    onBulkCreate,
+  } = useDashboard();
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {

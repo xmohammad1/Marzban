@@ -505,34 +505,35 @@ export const UserDialog: FC<UserDialogProps> = () => {
                                     );
                                   }}
                                 />
-                              </HStack>
-                            )}
                           </HStack>
-                        </FormControl>
-                        {!isEditing && isBulkCreating && (
-                          <FormControl mb={"10px"}>
-                            <FormLabel>{t("userDialog.bulkCount")}</FormLabel>
-                            <Controller
-                              control={form.control}
-                              name="bulk_count"
-                              render={({ field }) => (
-                                <Input
-                                  type="number"
-                                  min={1}
-                                  size="sm"
-                                  borderRadius="6px"
-                                  disabled={disabled}
-                                  error={form.formState.errors.bulk_count?.message}
-                                  {...field}
-                                />
-                              )}
-                            />
-                          </FormControl>
                         )}
-                        {!isEditing && (
-                          <FormControl flex="1">
-                            <FormLabel whiteSpace={"nowrap"}>
-                              {t("userDialog.onHold")}
+                      </HStack>
+                    </FormControl>
+                    {!isEditing && isBulkCreating && (
+                      <FormControl mb={"10px"}>
+                        <FormLabel>{t("userDialog.bulkCount")}</FormLabel>
+                        <Controller
+                          control={form.control}
+                          name="bulk_count"
+                          render={({ field }) => (
+                            <Input
+                              type="number"
+                              min={1}
+                              size="sm"
+                              borderRadius="6px"
+                              disabled={disabled}
+                              error={form.formState.errors.bulk_count?.message}
+                              value={field.value ? String(field.value) : ""}
+                              onChange={field.onChange}
+                            />
+                          )}
+                        />
+                      </FormControl>
+                    )}
+                    {!isEditing && (
+                      <FormControl flex="1">
+                        <FormLabel whiteSpace={"nowrap"}>
+                          {t("userDialog.onHold")}
                             </FormLabel>
                             <Controller
                               name="status"
