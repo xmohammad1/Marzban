@@ -56,6 +56,7 @@ def get_system_stats(
         users_expired=users_expired,
         users_limited=users_limited,
         users_on_hold=users_on_hold,
+        admin_usage=dbadmin.users_usage if dbadmin else 0,
         incoming_bandwidth=system.uplink,
         outgoing_bandwidth=system.downlink,
         incoming_bandwidth_speed=realtime_bandwidth_stats.incoming_bytes,

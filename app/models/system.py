@@ -14,6 +14,7 @@ class SystemStats(BaseModel):
     users_disabled: int
     users_expired: int
     users_limited: int
+    admin_usage: int
     incoming_bandwidth: int
     outgoing_bandwidth: int
     incoming_bandwidth_speed: int
