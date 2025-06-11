@@ -196,5 +196,10 @@
   "usersTable.noUser": "کاربری افزوده نشده است",
   "usersTable.noUserMatched": "به‌نظر میرسه کاربری که جستجو کردید، وجود ندارد",
   "usersTable.status": "وضعیت",
-  "usersTable.total": "مجموع"
+  "usersTable.total": "مجموع",
+  "deleteExpiredUsers.title": "حذف کاربران منقضی",
+  "deleteExpiredUsers.prompt": "تعداد روزهای گذشته از انقضا",
+  "deleteExpiredUsers.success": "{{count}} کاربر منقضی حذف شد.",
+  "deleteExpiredUsers.error": "ورودی نامعتبر یا خطا در حذف"
 }
+

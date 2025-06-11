@@ -191,5 +191,9 @@
   "usersTable.noUserMatched": "没有找到您搜索的用户",
   "usersTable.status": "状态",
   "usersTable.sortByExpire": "按过期时间排序",
-  "usersTable.total": "总共"
+  "usersTable.total": "总共",
+  "deleteExpiredUsers.title": "删除过期用户",
+  "deleteExpiredUsers.prompt": "过期天数",
+  "deleteExpiredUsers.success": "已删除 {{count}} 个过期用户",
+  "deleteExpiredUsers.error": "输入无效或删除失败"
 }

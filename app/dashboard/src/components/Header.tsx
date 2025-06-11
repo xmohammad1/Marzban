@@ -18,6 +18,7 @@ import {
   Cog6ToothIcon,
   CurrencyDollarIcon,
   DocumentMinusIcon,
+  TrashIcon,
   LinkIcon,
   MoonIcon,
   SquaresPlusIcon,
@@ -55,6 +56,7 @@ const HostsIcon = chakra(LinkIcon, iconProps);
 const NodesIcon = chakra(SquaresPlusIcon, iconProps);
 const NodesUsageIcon = chakra(ChartPieIcon, iconProps);
 const ResetUsageIcon = chakra(DocumentMinusIcon, iconProps);
+const DeleteExpiredIcon = chakra(TrashIcon, iconProps);
 const NotificationCircle = chakra(Box, {
   baseStyle: {
     bg: "yellow.500",
@@ -95,6 +97,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
   const {
     onEditingHosts,
     onResetAllUsage,
+    onDeletingExpiredUsers,
     onEditingNodes,
     onShowingNodesUsage,
   } = useDashboard();
@@ -175,6 +178,14 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
                     onClick={onResetAllUsage.bind(null, true)}
                   >
                     {t("resetAllUsage")}
+                  </MenuItem>
+                  <MenuItem
+                    maxW="170px"
+                    fontSize="sm"
+                    icon={<DeleteExpiredIcon />}
+                    onClick={onDeletingExpiredUsers.bind(null, true)}
+                  >
+                    {t("deleteExpiredUsers.title")}
                   </MenuItem>
                 </>
               )}

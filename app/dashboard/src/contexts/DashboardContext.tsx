@@ -48,6 +48,7 @@ type DashboardStateType = {
   isEditingNodes: boolean;
   isShowingNodesUsage: boolean;
   isResetingAllUsage: boolean;
+  isDeletingExpiredUsers: boolean;
   resetUsageUser: User | null;
   revokeSubscriptionUser: User | null;
   isEditingCore: boolean;
@@ -56,8 +57,10 @@ type DashboardStateType = {
   onEditingUser: (user: User | null) => void;
   onDeletingUser: (user: User | null) => void;
   onResetAllUsage: (isResetingAllUsage: boolean) => void;
+  onDeletingExpiredUsers: (isDeletingExpiredUsers: boolean) => void;
   refetchUsers: () => void;
   resetAllUsage: () => Promise<void>;
+  deleteExpiredUsers: (expired_after: string, expired_before: string) => Promise<string[]>;
   onFilterChange: (filters: Partial<FilterType>) => void;
   deleteUser: (user: User) => Promise<void>;
   createUser: (user: UserCreate) => Promise<void>;
@@ -114,6 +117,7 @@ export const useDashboard = create(
     },
     loading: true,
     isResetingAllUsage: false,
+    isDeletingExpiredUsers: false,
     isEditingHosts: false,
     isEditingNodes: false,
     isShowingNodesUsage: false,
@@ -136,6 +140,8 @@ export const useDashboard = create(
       });
     },
     onResetAllUsage: (isResetingAllUsage) => set({ isResetingAllUsage }),
+    onDeletingExpiredUsers: (isDeletingExpiredUsers) =>
+      set({ isDeletingExpiredUsers }),
     onCreateUser: (isCreatingNewUser) => set({ isCreatingNewUser }),
     onBulkCreate: (isBulkCreating) => set({ isBulkCreating }),
     onEditingUser: (editingUser) => {
@@ -211,6 +217,15 @@ export const useDashboard = create(
       }).then((user) => {
         set({ revokeSubscriptionUser: null, editingUser: user });
         get().refetchUsers();
+      });
+    },
+    deleteExpiredUsers: (expired_after, expired_before) => {
+      return fetch(`/users/expired`, {
+        method: "DELETE",
+        query: { expired_after, expired_before },
+      }).then((removed: string[]) => {
+        get().refetchUsers();
+        return removed;
       });
     },
   }))
