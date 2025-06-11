@@ -169,6 +169,7 @@
   "userDialog.selectOneProtocol": "Пожалуйста, выберите хотя бы один протокол",
   "userDialog.shadowsocksDesc": "Быстрый и безопасный, но не такой эффективный, как другие",
   "userDialog.startDate": "Дата начала",
+  "userDialog.bulkCount": "Количество пользователей",
   "userDialog.total": "Всего: ",
   "userDialog.trojanDesc": "Легковесный, безопасный и быстрый",
   "userDialog.usage": "Потребление",

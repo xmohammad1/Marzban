@@ -169,6 +169,7 @@
   "userDialog.selectOneProtocol": "Please select at least one protocol",
   "userDialog.shadowsocksDesc": "Fast and secure, but not efficient as others",
   "userDialog.startDate": "Start date",
+  "userDialog.bulkCount": "Number of Users",
   "userDialog.total": "Total: ",
   "userDialog.trojanDesc": "Lightweight, secure and lightening fast",
   "userDialog.usage": "Usage",
