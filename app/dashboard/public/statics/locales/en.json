@@ -190,5 +190,10 @@
   "usersTable.noUser": "There is no user added to the system",
   "usersTable.noUserMatched": "It seems there is no user matched with what you are looking for",
   "usersTable.status": "status",
-  "usersTable.total": "Total"
+  "usersTable.total": "Total",
+  "deleteExpiredUsers.title": "Delete Expired Users",
+  "deleteExpiredUsers.prompt": "Days since expiration",
+  "deleteExpiredUsers.success": "Removed expired users: {{count}}",
+  "deleteExpiredUsers.error": "Invalid input or deletion failed"
 }
+

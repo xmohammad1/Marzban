@@ -190,5 +190,9 @@
   "usersTable.noUser": "В системе нет созданных пользователей",
   "usersTable.noUserMatched": "Похоже, нет пользователя, соответствующего вашему запросу",
   "usersTable.status": "Статус",
-  "usersTable.total": "Всего"
+  "usersTable.total": "Всего",
+  "deleteExpiredUsers.title": "Удалить просроченных пользователей",
+  "deleteExpiredUsers.prompt": "Количество дней после истечения",
+  "deleteExpiredUsers.success": "Удалено просроченных пользователей: {{count}}",
+  "deleteExpiredUsers.error": "Неверный ввод или ошибка удаления"
 }
