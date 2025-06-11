@@ -164,12 +164,11 @@ export const useDashboard = create(
         queryClient.invalidateQueries(StatisticsQueryKey);
       });
     },
-    createUser: (body: UserCreate) => {
-      return fetch(`/user`, { method: "POST", body }).then(() => {
-        set({ editingUser: null });
-        get().refetchUsers();
-        queryClient.invalidateQueries(StatisticsQueryKey);
-      });
+    createUser: async (body: UserCreate) => {
+      await fetch(`/user`, { method: "POST", body });
+      set({ editingUser: null });
+      get().refetchUsers();
+      queryClient.invalidateQueries(StatisticsQueryKey);
     },
     editUser: (body: UserCreate) => {
       return fetch(`/user/${body.username}`, { method: "PUT", body }).then(
