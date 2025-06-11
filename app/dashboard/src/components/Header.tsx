@@ -33,7 +33,6 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { updateThemeColor } from "utils/themeColor";
 import { Language } from "./Language";
-import { DeleteIcon } from "./DeleteUserModal";
 import useGetUser from "hooks/useGetUser";
 
 type HeaderProps = {
@@ -96,7 +95,6 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
   const {
     onEditingHosts,
     onResetAllUsage,
-    onDeleteExpiredUsers,
     onEditingNodes,
     onShowingNodesUsage,
   } = useDashboard();
@@ -180,14 +178,6 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
                   </MenuItem>
                 </>
               )}
-              <MenuItem
-                maxW="170px"
-                fontSize="sm"
-                icon={<DeleteIcon />}
-                onClick={onDeleteExpiredUsers.bind(null, true)}
-              >
-                {t("deleteExpiredUsers")}
-              </MenuItem>
               {/* <Link to={DONATION_URL} target="_blank">
                 <MenuItem
                   maxW="170px"
