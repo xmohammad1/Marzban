@@ -33,7 +33,6 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { updateThemeColor } from "utils/themeColor";
 import { Language } from "./Language";
-import { DeleteIcon } from "./DeleteUserModal";
 import useGetUser from "hooks/useGetUser";
 
 type HeaderProps = {
@@ -98,7 +97,6 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
     onResetAllUsage,
     onEditingNodes,
     onShowingNodesUsage,
-    onDeleteExpiredUsers,
   } = useDashboard();
   const { t } = useTranslation();
   const { colorMode, toggleColorMode } = useColorMode();
@@ -170,27 +168,19 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
                   >
                     {t("header.nodesUsage")}
                   </MenuItem>
-              <MenuItem
-                maxW="170px"
-                fontSize="sm"
-                icon={<ResetUsageIcon />}
-                onClick={onResetAllUsage.bind(null, true)}
-              >
-                {t("resetAllUsage")}
-              </MenuItem>
-              </>
-            )}
-            <MenuItem
-              maxW="170px"
-              fontSize="sm"
-              icon={<DeleteIcon />}
-              onClick={onDeleteExpiredUsers.bind(null, true)}
-            >
-              {t("deleteExpiredUsers")}
-            </MenuItem>
-            {/* <Link to={DONATION_URL} target="_blank">
-              <MenuItem
-                maxW="170px"
+                  <MenuItem
+                    maxW="170px"
+                    fontSize="sm"
+                    icon={<ResetUsageIcon />}
+                    onClick={onResetAllUsage.bind(null, true)}
+                  >
+                    {t("resetAllUsage")}
+                  </MenuItem>
+                </>
+              )}
+              {/* <Link to={DONATION_URL} target="_blank">
+                <MenuItem
+                  maxW="170px"
                   fontSize="sm"
                   icon={<DonationIcon />}
                   position="relative"

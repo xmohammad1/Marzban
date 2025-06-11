@@ -5,7 +5,6 @@ import { queryClient } from "utils/react-query";
 import { getUsersPerPageLimitSize } from "utils/userPreferenceStorage";
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
-import dayjs from "dayjs";
 
 export type FilterType = {
   search?: string;
@@ -49,7 +48,6 @@ type DashboardStateType = {
   isEditingNodes: boolean;
   isShowingNodesUsage: boolean;
   isResetingAllUsage: boolean;
-  isDeletingExpiredUsers: boolean;
   resetUsageUser: User | null;
   revokeSubscriptionUser: User | null;
   isEditingCore: boolean;
@@ -58,10 +56,8 @@ type DashboardStateType = {
   onEditingUser: (user: User | null) => void;
   onDeletingUser: (user: User | null) => void;
   onResetAllUsage: (isResetingAllUsage: boolean) => void;
-  onDeleteExpiredUsers: (isDeletingExpiredUsers: boolean) => void;
   refetchUsers: () => void;
   resetAllUsage: () => Promise<void>;
-  deleteExpiredUsers: (days: number) => Promise<string[]>;
   onFilterChange: (filters: Partial<FilterType>) => void;
   deleteUser: (user: User) => Promise<void>;
   createUser: (user: UserCreate) => Promise<void>;
@@ -118,7 +114,6 @@ export const useDashboard = create(
     },
     loading: true,
     isResetingAllUsage: false,
-    isDeletingExpiredUsers: false,
     isEditingHosts: false,
     isEditingNodes: false,
     isShowingNodesUsage: false,
@@ -140,23 +135,7 @@ export const useDashboard = create(
         get().refetchUsers();
       });
     },
-    deleteExpiredUsers: (days: number) => {
-      const expired_before = dayjs()
-        .utc()
-        .subtract(days, "day")
-        .format("YYYY-MM-DDTHH:mm:ss");
-      const expired_after = "2000-01-01T00:00:00";
-      return fetch(`/users/expired`, {
-        method: "DELETE",
-        query: { expired_after, expired_before },
-      }).then((users: string[]) => {
-        get().refetchUsers();
-        return users;
-      });
-    },
     onResetAllUsage: (isResetingAllUsage) => set({ isResetingAllUsage }),
-    onDeleteExpiredUsers: (isDeletingExpiredUsers) =>
-      set({ isDeletingExpiredUsers }),
     onCreateUser: (isCreatingNewUser) => set({ isCreatingNewUser }),
     onBulkCreate: (isBulkCreating) => set({ isBulkCreating }),
     onEditingUser: (editingUser) => {
