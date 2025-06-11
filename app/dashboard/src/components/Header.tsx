@@ -34,6 +34,7 @@ import { Link } from "react-router-dom";
 import { updateThemeColor } from "utils/themeColor";
 import { Language } from "./Language";
 import useGetUser from "hooks/useGetUser";
+import { DeleteIcon } from "./DeleteUserModal";
 
 type HeaderProps = {
   actions?: ReactNode;
@@ -97,6 +98,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
     onResetAllUsage,
     onEditingNodes,
     onShowingNodesUsage,
+    onDeletingExpiredUsers,
   } = useDashboard();
   const { t } = useTranslation();
   const { colorMode, toggleColorMode } = useColorMode();
@@ -178,6 +180,14 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
                   </MenuItem>
                 </>
               )}
+              <MenuItem
+                maxW="170px"
+                fontSize="sm"
+                icon={<DeleteIcon />}
+                onClick={() => onDeletingExpiredUsers(true)}
+              >
+                {t("deleteExpiredUsers")}
+              </MenuItem>
               {/* <Link to={DONATION_URL} target="_blank">
                 <MenuItem
                   maxW="170px"
