@@ -764,7 +764,7 @@ type EmptySectionProps = {
 };
 
 const EmptySection: FC<EmptySectionProps> = ({ isFiltered }) => {
-  const { onCreateUser } = useDashboard();
+  const { onCreateUser, onBulkCreate } = useDashboard();
   return (
     <Box
       padding="5"
@@ -808,6 +808,18 @@ const EmptySection: FC<EmptySectionProps> = ({ isFiltered }) => {
           onClick={() => onCreateUser(true)}
         >
           {t("createUser")}
+        </Button>
+      )}
+      {!isFiltered && (
+        <Button
+          size="sm"
+          colorScheme="primary"
+          onClick={() => {
+            onBulkCreate(true);
+            onCreateUser(true);
+          }}
+        >
+          {t("createBulkUsers")}
         </Button>
       )}
     </Box>
