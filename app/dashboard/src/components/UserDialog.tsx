@@ -469,7 +469,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                           </FormLabel>
                           <HStack>
                             <Input
-                              size="sm"
+                              size="md"
                               type="text"
                               borderRadius="6px"
                               error={form.formState.errors.username?.message}
@@ -519,7 +519,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                             <Input
                               type="number"
                               min={1}
-                              size="sm"
+                              size="xs"
                               borderRadius="6px"
                               disabled={disabled}
                               error={form.formState.errors.bulk_count?.message}

@@ -169,6 +169,7 @@
   "userDialog.selectOneProtocol": "请至少选择一个协议",
   "userDialog.shadowsocksDesc": "快速且安全, 但效率不如其它",
   "userDialog.startDate": "开始日期",
+  "userDialog.bulkCount": "数量",
   "userDialog.total": "总共：",
   "userDialog.trojanDesc": "轻量、安全且非常快",
   "userDialog.usage": "流量详情",
