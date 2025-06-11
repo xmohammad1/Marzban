@@ -548,7 +548,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                               <Input
                                 type="number"
                                 min={1}
-                                size="xs"
+                                size="sm"
                                 borderRadius="6px"
                                 disabled={disabled}
                                 error={form.formState.errors.bulk_count?.message}
