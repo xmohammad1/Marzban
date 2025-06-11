@@ -194,5 +194,10 @@
   "usersTable.noUser": "There is no user added to the system",
   "usersTable.noUserMatched": "It seems there is no user matched with what you are looking for",
   "usersTable.status": "status",
-  "usersTable.total": "Total"
+  "usersTable.total": "Total",
+  "deleteSelected": "Delete Selected",
+  "deleteSelectedUsers.title": "Delete Selected Users",
+  "deleteSelectedUsers.prompt": "Are you sure you want to delete {{count}} selected users?",
+  "deleteSelectedUsers.success": "{{count}} users deleted."
 }
+

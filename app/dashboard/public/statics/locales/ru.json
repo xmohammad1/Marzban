@@ -194,5 +194,10 @@
   "usersTable.noUser": "В системе нет созданных пользователей",
   "usersTable.noUserMatched": "Похоже, нет пользователя, соответствующего вашему запросу",
   "usersTable.status": "Статус",
-  "usersTable.total": "Всего"
+  "usersTable.total": "Всего",
+  "deleteSelected": "Удалить выбранные",
+  "deleteSelectedUsers.title": "Удалить выбранных пользователей",
+  "deleteSelectedUsers.prompt": "Вы уверены, что хотите удалить выбранных пользователей ({{count}})?",
+  "deleteSelectedUsers.success": "Удалено пользователей: {{count}}."
 }
+
