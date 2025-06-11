@@ -143,11 +143,11 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
               }
               position="relative"
             ></MenuButton>
-            <MenuList minW="170px" zIndex={99999} className="menuList">
+            <MenuList minW="200px" zIndex={99999} className="menuList">
               {isSudo() && (
                 <>
                   <MenuItem
-                    maxW="170px"
+                    maxW="200px"
                     fontSize="sm"
                     icon={<HostsIcon />}
                     onClick={onEditingHosts.bind(null, true)}
@@ -155,7 +155,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
                     {t("header.hostSettings")}
                   </MenuItem>
                   <MenuItem
-                    maxW="170px"
+                    maxW="200px"
                     fontSize="sm"
                     icon={<NodesIcon />}
                     onClick={onEditingNodes.bind(null, true)}
@@ -163,7 +163,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
                     {t("header.nodeSettings")}
                   </MenuItem>
                   <MenuItem
-                    maxW="170px"
+                    maxW="200px"
                     fontSize="sm"
                     icon={<NodesUsageIcon />}
                     onClick={onShowingNodesUsage.bind(null, true)}
@@ -171,7 +171,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
                     {t("header.nodesUsage")}
                   </MenuItem>
                   <MenuItem
-                    maxW="170px"
+                    maxW="200px"
                     fontSize="sm"
                     icon={<ResetUsageIcon />}
                     onClick={onResetAllUsage.bind(null, true)}
@@ -181,7 +181,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
                 </>
               )}
               <MenuItem
-                maxW="170px"
+                maxW="200px"
                 fontSize="sm"
                 icon={<DeleteIcon />}
                 onClick={() => onDeletingExpiredUsers(true)}
@@ -190,7 +190,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
               </MenuItem>
               {/* <Link to={DONATION_URL} target="_blank">
                 <MenuItem
-                  maxW="170px"
+                  maxW="200px"
                   fontSize="sm"
                   icon={<DonationIcon />}
                   position="relative"
@@ -203,7 +203,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
                 </MenuItem>
               </Link> */}
               <Link to="/login">
-                <MenuItem maxW="170px" fontSize="sm" icon={<LogoutIcon />}>
+                <MenuItem maxW="200px" fontSize="sm" icon={<LogoutIcon />}>
                   {t("header.logout")}
                 </MenuItem>
               </Link>
