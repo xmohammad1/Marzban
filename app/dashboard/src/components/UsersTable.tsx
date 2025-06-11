@@ -668,7 +668,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                         />
                       )}
                       <OnlineBadge lastOnline={user.online_at} />
-                      {user.username}
+                      <Text isTruncated>{user.username}</Text>
                       <OnlineStatus lastOnline={user.online_at} />
                     </HStack>
                   </Td>
