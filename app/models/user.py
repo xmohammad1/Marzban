@@ -13,7 +13,8 @@ from app.subscription.share import generate_v2ray_links
 from app.utils.jwt import create_subscription_token
 from config import XRAY_SUBSCRIPTION_PATH, XRAY_SUBSCRIPTION_URL_PREFIX
 
-USERNAME_REGEXP = re.compile(r"^(?=\w{3,32}\b)[a-zA-Z0-9-_@.]+(?:_[a-zA-Z0-9-_@.]+)*$")
+USERNAME_REGEXP = re.compile(
+    r"^(?=\w{3,32}\b)[a-zA-Z0-9-_@.]+(?:_[a-zA-Z0-9-_@.]+)*$")
 
 
 class ReminderType(str, Enum):
@@ -71,7 +72,8 @@ class User(BaseModel):
     sub_last_user_agent: Optional[str] = Field(None, nullable=True)
     online_at: Optional[datetime] = Field(None, nullable=True)
     on_hold_expire_duration: Optional[int] = Field(None, nullable=True)
-    on_hold_timeout: Optional[Union[datetime, None]] = Field(None, nullable=True)
+    on_hold_timeout: Optional[Union[datetime, None]
+                              ] = Field(None, nullable=True)
 
     auto_delete_in_days: Optional[int] = Field(None, nullable=True)
 
@@ -85,7 +87,9 @@ class User(BaseModel):
             return int(v)
         if isinstance(v, int):  # Allow integers directly
             return v
-        raise ValueError("data_limit must be an integer or a float, not a string")  # Reject strings
+        # Reject strings
+        raise ValueError(
+            "data_limit must be an integer or a float, not a string")
 
     @field_validator("proxies", mode="before")
     def validate_proxies(cls, v, values, **kwargs):
@@ -197,9 +201,11 @@ class UserCreate(User):
         expire = values.data.get("expire")
         if status == UserStatusCreate.on_hold:
             if (on_hold_expire == 0 or on_hold_expire is None):
-                raise ValueError("User cannot be on hold without a valid on_hold_expire_duration.")
+                raise ValueError(
+                    "User cannot be on hold without a valid on_hold_expire_duration.")
             if expire:
-                raise ValueError("User cannot be on hold with specified expire.")
+                raise ValueError(
+                    "User cannot be on hold with specified expire.")
         return status
 
 
@@ -273,9 +279,11 @@ class UserModify(User):
         expire = values.data.get("expire")
         if status == UserStatusCreate.on_hold:
             if (on_hold_expire == 0 or on_hold_expire is None):
-                raise ValueError("User cannot be on hold without a valid on_hold_expire_duration.")
+                raise ValueError(
+                    "User cannot be on hold without a valid on_hold_expire_duration.")
             if expire:
-                raise ValueError("User cannot be on hold with specified expire.")
+                raise ValueError(
+                    "User cannot be on hold with specified expire.")
         return status
 
 
@@ -324,12 +332,14 @@ class UserResponse(User):
             return int(v)
         if isinstance(v, int):  # Allow integers directly
             return v
-        raise ValueError("must be an integer or a float, not a string")  # Reject strings
+        # Reject strings
+        raise ValueError("must be an integer or a float, not a string")
 
 
 class SubscriptionUserResponse(UserResponse):
     admin: Admin | None = Field(default=None, exclude=True)
-    excluded_inbounds: Dict[ProxyTypes, List[str]] | None = Field(None, exclude=True)
+    excluded_inbounds: Dict[ProxyTypes, List[str]
+                            ] | None = Field(None, exclude=True)
     note: str | None = Field(None, exclude=True)
     inbounds: Dict[ProxyTypes, List[str]] | None = Field(None, exclude=True)
     auto_delete_in_days: int | None = Field(None, exclude=True)
@@ -354,7 +364,8 @@ class UserUsageResponse(BaseModel):
             return int(v)
         if isinstance(v, int):  # Allow integers directly
             return v
-        raise ValueError("must be an integer or a float, not a string")  # Reject strings
+        # Reject strings
+        raise ValueError("must be an integer or a float, not a string")
 
 
 class UserUsagesResponse(BaseModel):
@@ -364,3 +375,7 @@ class UserUsagesResponse(BaseModel):
 
 class UsersUsagesResponse(BaseModel):
     usages: List[UserUsageResponse]
+
+
+class UsersDeleteRequest(BaseModel):
+    usernames: List[str]
