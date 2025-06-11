@@ -1,7 +1,6 @@
 import { Box, BoxProps, Card, chakra, HStack, Text } from "@chakra-ui/react";
 import {
   ChartBarIcon,
-  ChartPieIcon,
   UsersIcon,
 } from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
@@ -29,14 +28,6 @@ const NetworkIcon = chakra(ChartBarIcon, {
   },
 });
 
-const MemoryIcon = chakra(ChartPieIcon, {
-  baseStyle: {
-    w: 5,
-    h: 5,
-    position: "relative",
-    zIndex: "2",
-  },
-});
 
 type StatisticCardProps = {
   title: string;
@@ -163,27 +154,6 @@ export const Statistics: FC<BoxProps> = (props) => {
         title={t("dataUsage")}
         content={systemData && formatBytes(systemData.admin_usage)}
         icon={<NetworkIcon />}
-      />
-      <StatisticCard
-        title={t("memoryUsage")}
-        content={
-          systemData && (
-            <HStack alignItems="flex-end">
-              <Text>{formatBytes(systemData.mem_used, 1, true)[0]}</Text>
-              <Text
-                fontWeight="normal"
-                fontSize="lg"
-                as="span"
-                display="inline-block"
-                pb="5px"
-              >
-                {formatBytes(systemData.mem_used, 1, true)[1]} /{" "}
-                {formatBytes(systemData.mem_total, 1)}
-              </Text>
-            </HStack>
-          )
-        }
-        icon={<MemoryIcon />}
       />
     </HStack>
   );
