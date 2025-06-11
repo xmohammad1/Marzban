@@ -40,7 +40,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { resetStrategy } from "constants/UserSettings";
 import { FilterUsageType, useDashboard } from "contexts/DashboardContext";
 import dayjs from "dayjs";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 import ReactDatePicker from "react-datepicker";
 import { Controller, FormProvider, useForm, useWatch } from "react-hook-form";
@@ -242,12 +242,16 @@ export const UserDialog: FC<UserDialogProps> = () => {
     setUsageVisible((current) => !current);
   };
 
-  const protocolsList = [
-    { title: "vmess", description: t("userDialog.vmessDesc") },
-    { title: "vless", description: t("userDialog.vlessDesc") },
-    { title: "trojan", description: t("userDialog.trojanDesc") },
-    { title: "shadowsocks", description: t("userDialog.shadowsocksDesc") },
-  ].filter(({ title }) => (inbounds.get(title as any) || []).length > 0);
+  const protocolsList = useMemo(
+    () =>
+      [
+        { title: "vmess", description: t("userDialog.vmessDesc") },
+        { title: "vless", description: t("userDialog.vlessDesc") },
+        { title: "trojan", description: t("userDialog.trojanDesc") },
+        { title: "shadowsocks", description: t("userDialog.shadowsocksDesc") },
+      ].filter(({ title }) => (inbounds.get(title as any) || []).length > 0),
+    [inbounds, t]
+  );
 
   const form = useForm<FormType>({
     defaultValues: getDefaultValues(),
