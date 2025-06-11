@@ -16,13 +16,10 @@ from app.models.user import (
     UserStatus,
     UsersUsagesResponse,
     UserUsagesResponse,
-    UsersDeleteRequest,
 )
-from app.db import models
 from app.utils import report, responses
 
-router = APIRouter(tags=["User"], prefix="/api",
-                   responses={401: responses._401})
+router = APIRouter(tags=["User"], prefix="/api", responses={401: responses._401})
 
 
 @router.post("/user", response_model=UserResponse, responses={400: responses._400, 409: responses._409})
@@ -67,8 +64,7 @@ def add_user(
 
     bg.add_task(xray.operations.add_user, dbuser=dbuser)
     user = UserResponse.model_validate(dbuser)
-    report.user_created(user=user, user_id=dbuser.id,
-                        by=admin, user_admin=dbuser.admin)
+    report.user_created(user=user, user_id=dbuser.id, by=admin, user_admin=dbuser.admin)
     logger.info(f'New user "{dbuser.username}" added')
     return user
 
@@ -121,8 +117,7 @@ def modify_user(
     else:
         bg.add_task(xray.operations.remove_user, dbuser=dbuser)
 
-    bg.add_task(report.user_updated, user=user,
-                user_admin=dbuser.admin, by=admin)
+    bg.add_task(report.user_updated, user=user, user_admin=dbuser.admin, by=admin)
 
     logger.info(f'User "{user.username}" modified')
 
@@ -312,8 +307,7 @@ def get_users_usage(
     start, end = validate_dates(start, end)
 
     usages = crud.get_all_users_usages(
-        db=db, start=start, end=end, admin=owner if admin.is_sudo else [
-            admin.username]
+        db=db, start=start, end=end, admin=owner if admin.is_sudo else [admin.username]
     )
 
     return {"usages": usages}
@@ -341,10 +335,8 @@ def set_owner(
 
 @router.get("/users/expired", response_model=List[str])
 def get_expired_users(
-    expired_after: Optional[datetime] = Query(
-        None, example="2024-01-01T00:00:00"),
-    expired_before: Optional[datetime] = Query(
-        None, example="2024-01-31T23:59:59"),
+    expired_after: Optional[datetime] = Query(None, example="2024-01-01T00:00:00"),
+    expired_before: Optional[datetime] = Query(None, example="2024-01-31T23:59:59"),
     db: Session = Depends(get_db),
     admin: Admin = Depends(Admin.get_current),
 ):
@@ -357,21 +349,17 @@ def get_expired_users(
     - If both are omitted, returns all expired users
     """
 
-    expired_after, expired_before = validate_dates(
-        expired_after, expired_before)
+    expired_after, expired_before = validate_dates(expired_after, expired_before)
 
-    expired_users = get_expired_users_list(
-        db, admin, expired_after, expired_before)
+    expired_users = get_expired_users_list(db, admin, expired_after, expired_before)
     return [u.username for u in expired_users]
 
 
 @router.delete("/users/expired", response_model=List[str])
 def delete_expired_users(
     bg: BackgroundTasks,
-    expired_after: Optional[datetime] = Query(
-        None, example="2024-01-01T00:00:00"),
-    expired_before: Optional[datetime] = Query(
-        None, example="2024-01-31T23:59:59"),
+    expired_after: Optional[datetime] = Query(None, example="2024-01-01T00:00:00"),
+    expired_before: Optional[datetime] = Query(None, example="2024-01-31T23:59:59"),
     db: Session = Depends(get_db),
     admin: Admin = Depends(Admin.get_current),
 ):
@@ -382,11 +370,9 @@ def delete_expired_users(
     - **expired_before** UTC datetime (optional)
     - At least one of expired_after or expired_before must be provided
     """
-    expired_after, expired_before = validate_dates(
-        expired_after, expired_before)
+    expired_after, expired_before = validate_dates(expired_after, expired_before)
 
-    expired_users = get_expired_users_list(
-        db, admin, expired_after, expired_before)
+    expired_users = get_expired_users_list(db, admin, expired_after, expired_before)
     removed_users = [u.username for u in expired_users]
 
     if not removed_users:
@@ -408,34 +394,3 @@ def delete_expired_users(
         )
 
     return removed_users
-
-
-@router.delete("/users", response_model=List[str])
-def delete_users(
-    request: UsersDeleteRequest,
-    bg: BackgroundTasks,
-    db: Session = Depends(get_db),
-    admin: Admin = Depends(Admin.get_current),
-):
-    """Delete selected users"""
-    if not request.usernames:
-        raise HTTPException(status_code=400, detail="No usernames provided")
-
-    dbusers = db.query(models.User).filter(
-        models.User.username.in_(request.usernames)).all()
-
-    if not dbusers:
-        raise HTTPException(status_code=404, detail="Users not found")
-
-    crud.remove_users(db, dbusers)
-
-    for dbuser in dbusers:
-        logger.info(f'User "{dbuser.username}" deleted')
-        bg.add_task(
-            report.user_deleted,
-            username=dbuser.username,
-            user_admin=dbuser.admin,
-            by=admin,
-        )
-
-    return [u.username for u in dbusers]

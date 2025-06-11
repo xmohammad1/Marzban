@@ -48,10 +48,8 @@ type DashboardStateType = {
   isShowingNodesUsage: boolean;
   isResetingAllUsage: boolean;
   isDeletingExpiredUsers: boolean;
-  isDeletingSelectedUsers: boolean;
   resetUsageUser: User | null;
   revokeSubscriptionUser: User | null;
-  selectedUsers: string[];
   isEditingCore: boolean;
   onCreateUser: (isOpen: boolean) => void;
   onEditingUser: (user: User | null) => void;
@@ -63,10 +61,6 @@ type DashboardStateType = {
   deleteExpiredUsers: (days: number) => Promise<string[]>;
   onFilterChange: (filters: Partial<FilterType>) => void;
   deleteUser: (user: User) => Promise<void>;
-  deleteSelectedUsers: () => Promise<void>;
-  onDeletingSelectedUsers: (isDeleting: boolean) => void;
-  toggleSelectedUser: (username: string) => void;
-  setSelectedUsers: (users: string[]) => void;
   createUser: (user: UserCreate) => Promise<void>;
   editUser: (user: UserCreate) => Promise<void>;
   fetchUserUsage: (user: User, query: FilterUsageType) => Promise<void>;
@@ -121,13 +115,11 @@ export const useDashboard = create(
     loading: true,
     isResetingAllUsage: false,
     isDeletingExpiredUsers: false,
-    isDeletingSelectedUsers: false,
     isEditingHosts: false,
     isEditingNodes: false,
     isShowingNodesUsage: false,
     resetUsageUser: null,
     revokeSubscriptionUser: null,
-    selectedUsers: [],
     filters: {
       username: "",
       limit: getUsersPerPageLimitSize(),
@@ -185,25 +177,6 @@ export const useDashboard = create(
         queryClient.invalidateQueries(StatisticsQueryKey);
       });
     },
-    deleteSelectedUsers: () => {
-      const usernames = get().selectedUsers;
-      return fetch(`/users`, { method: "DELETE", body: { usernames } }).then(() => {
-        set({ selectedUsers: [], isDeletingSelectedUsers: false });
-        get().refetchUsers();
-        queryClient.invalidateQueries(StatisticsQueryKey);
-      });
-    },
-    onDeletingSelectedUsers: (isDeleting) => set({ isDeletingSelectedUsers: isDeleting }),
-    toggleSelectedUser: (username) => {
-      const selected = new Set(get().selectedUsers);
-      if (selected.has(username)) {
-        selected.delete(username);
-      } else {
-        selected.add(username);
-      }
-      set({ selectedUsers: Array.from(selected) });
-    },
-    setSelectedUsers: (users) => set({ selectedUsers: users }),
     createUser: async (body: UserCreate) => {
       await fetch(`/user`, { method: "POST", body });
       set({ editingUser: null });
