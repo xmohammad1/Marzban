@@ -25,6 +25,7 @@ import {
   Tr,
   useBreakpointValue,
   VStack,
+  Checkbox,
 } from "@chakra-ui/react";
 import {
   CheckIcon,
@@ -160,7 +161,7 @@ const UsageSlider: FC<UsageSliderProps> = (props) => {
               ? " " +
                 t(
                   "userDialog.resetStrategy" +
-                    getResetStrategy(dataLimitResetStrategy)
+                    getResetStrategy(dataLimitResetStrategy),
                 )
               : "")
           )}
@@ -193,11 +194,14 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
     users: totalUsers,
     onEditingUser,
     onFilterChange,
+    selectedUsers,
+    toggleSelectedUser,
+    setSelectedUsers,
   } = useDashboard();
 
   const { t } = useTranslation();
   const [selectedRow, setSelectedRow] = useState<ExpandedIndex | undefined>(
-    undefined
+    undefined,
   );
   const marginTop = useBreakpointValue({ base: 120, lg: 72 }) || 72;
   const [top, setTop] = useState(`${marginTop}px`);
@@ -249,6 +253,24 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
         <Table orientation="vertical" zIndex="docked" {...props}>
           <Thead zIndex="docked" position="relative">
             <Tr>
+              <Th position="sticky" top={top} w="40px" p={0}>
+                <Checkbox
+                  colorScheme="primary"
+                  isChecked={
+                    selectedUsers.length > 0 &&
+                    selectedUsers.length === users.length
+                  }
+                  isIndeterminate={
+                    selectedUsers.length > 0 &&
+                    selectedUsers.length < users.length
+                  }
+                  onChange={(e) =>
+                    e.target.checked
+                      ? setSelectedUsers(users.map((u) => u.username))
+                      : setSelectedUsers([])
+                  }
+                />
+              </Th>
               <Th
                 position="sticky"
                 top={top}
@@ -347,6 +369,20 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                       cursor="pointer"
                     >
                       <Td
+                        p={0}
+                        pl={2}
+                        borderBottom={0}
+                        w="40px"
+                        minW="40px"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Checkbox
+                          colorScheme="primary"
+                          isChecked={selectedUsers.includes(user.username)}
+                          onChange={() => toggleSelectedUser(user.username)}
+                        />
+                      </Td>
+                      <Td
                         borderBottom={0}
                         minW="100px"
                         pl={4}
@@ -394,7 +430,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                       className="collapsible"
                       onClick={toggleAccordion.bind(null, i)}
                     >
-                      <Td p={0} colSpan={4}>
+                      <Td p={0} colSpan={5}>
                         <AccordionItem border={0}>
                           <AccordionButton display="none"></AccordionButton>
                           <AccordionPanel
@@ -495,6 +531,29 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
             <Th
               position="sticky"
               top={{ base: "unset", md: top }}
+              w="40px"
+              p={0}
+            >
+              <Checkbox
+                colorScheme="primary"
+                isChecked={
+                  selectedUsers.length > 0 &&
+                  selectedUsers.length === users.length
+                }
+                isIndeterminate={
+                  selectedUsers.length > 0 &&
+                  selectedUsers.length < users.length
+                }
+                onChange={(e) =>
+                  e.target.checked
+                    ? setSelectedUsers(users.map((u) => u.username))
+                    : setSelectedUsers([])
+                }
+              />
+            </Th>
+            <Th
+              position="sticky"
+              top={{ base: "unset", md: top }}
               minW="140px"
               cursor={"pointer"}
               onClick={handleSort.bind(null, "username")}
@@ -590,6 +649,18 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                   })}
                   onClick={() => onEditingUser(user)}
                 >
+                  <Td
+                    p={0}
+                    pl={2}
+                    w="40px"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Checkbox
+                      colorScheme="primary"
+                      isChecked={selectedUsers.includes(user.username)}
+                      onChange={() => toggleSelectedUser(user.username)}
+                    />
+                  </Td>
                   <Td minW="140px">
                     <div className="flex-status">
                       <OnlineBadge lastOnline={user.online_at} />
@@ -620,7 +691,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
             })}
           {users.length == 0 && (
             <Tr>
-              <Td colSpan={4}>
+              <Td colSpan={5}>
                 <EmptySection isFiltered={isFiltered} />
               </Td>
             </Tr>
