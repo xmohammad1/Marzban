@@ -289,7 +289,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
     }
   }, [editingUser]);
 
-  const submit = (values: FormType) => {
+  const submit = async (values: FormType) => {
     setLoading(true);
     const methods = { edited: editUser, created: createUser };
     const method = isEditing ? "edited" : "created";
@@ -327,46 +327,41 @@ export const UserDialog: FC<UserDialogProps> = () => {
         });
       });
 
-    const promises: Promise<void>[] = [];
-    if (isBulkCreating && !isEditing) {
-      const count = values.bulk_count || 1;
-      for (let i = 0; i < count; i++) {
-        const match = values.username.match(/(\d+)$/);
-        const username =
-          i === 0
-            ? values.username
-            : match
-            ? values.username.replace(match[1], String(parseInt(match[1]) + i))
-            : values.username + (i + 1);
-        promises.push(createUser({ ...body, username }));
-      }
-    } else {
-      promises.push(create());
-    }
-
-    Promise.all(promises)
-      .then(() => {
-        onClose();
-      })
-      .catch((err) => {
-        if (err?.response?.status === 409 || err?.response?.status === 400)
-          setError(err?.response?._data?.detail);
-        if (err?.response?.status === 422) {
-          Object.keys(err.response._data.detail).forEach((key) => {
-            setError(err?.response._data.detail[key] as string);
-            form.setError(
-              key as "proxies" | "username" | "data_limit" | "expire",
-              {
-                type: "custom",
-                message: err.response._data.detail[key],
-              }
-            );
-          });
+    try {
+      if (isBulkCreating && !isEditing) {
+        const count = values.bulk_count || 1;
+        for (let i = 0; i < count; i++) {
+          const match = values.username.match(/(\d+)$/);
+          const username =
+            i === 0
+              ? values.username
+              : match
+              ? values.username.replace(match[1], String(parseInt(match[1]) + i))
+              : values.username + (i + 1);
+          await createUser({ ...body, username });
         }
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+      } else {
+        await create();
+      }
+      onClose();
+    } catch (err: any) {
+      if (err?.response?.status === 409 || err?.response?.status === 400)
+        setError(err?.response?._data?.detail);
+      if (err?.response?.status === 422) {
+        Object.keys(err.response._data.detail).forEach((key) => {
+          setError(err?.response._data.detail[key] as string);
+          form.setError(
+            key as "proxies" | "username" | "data_limit" | "expire",
+            {
+              type: "custom",
+              message: err.response._data.detail[key],
+            }
+          );
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const onClose = () => {
@@ -509,31 +504,10 @@ export const UserDialog: FC<UserDialogProps> = () => {
                         )}
                       </HStack>
                     </FormControl>
-                    {!isEditing && isBulkCreating && (
-                      <FormControl mb={"10px"}>
-                        <FormLabel>{t("userDialog.bulkCount")}</FormLabel>
-                        <Controller
-                          control={form.control}
-                          name="bulk_count"
-                          render={({ field }) => (
-                            <Input
-                              type="number"
-                              min={1}
-                              size="xs"
-                              borderRadius="6px"
-                              disabled={disabled}
-                              error={form.formState.errors.bulk_count?.message}
-                              value={field.value ? String(field.value) : ""}
-                              onChange={field.onChange}
-                            />
-                          )}
-                        />
-                      </FormControl>
-                    )}
                     {!isEditing && (
-                      <FormControl flex="1">
-                        <FormLabel whiteSpace={"nowrap"}>
-                          {t("userDialog.onHold")}
+                        <FormControl flex="1">
+                          <FormLabel whiteSpace={"nowrap"}>
+                            {t("userDialog.onHold")}
                             </FormLabel>
                             <Controller
                               name="status"
@@ -564,6 +538,27 @@ export const UserDialog: FC<UserDialogProps> = () => {
                           </FormControl>
                         )}
                       </Flex>
+                      {!isEditing && isBulkCreating && (
+                        <FormControl mb={"10px"}>
+                          <FormLabel>{t("userDialog.bulkCount")}</FormLabel>
+                          <Controller
+                            control={form.control}
+                            name="bulk_count"
+                            render={({ field }) => (
+                              <Input
+                                type="number"
+                                min={1}
+                                size="xs"
+                                borderRadius="6px"
+                                disabled={disabled}
+                                error={form.formState.errors.bulk_count?.message}
+                                value={field.value ? String(field.value) : ""}
+                                onChange={field.onChange}
+                              />
+                            )}
+                          />
+                        </FormControl>
+                      )}
                       <FormControl mb={"10px"}>
                         <FormLabel>{t("userDialog.dataLimit")}</FormLabel>
                         <Controller

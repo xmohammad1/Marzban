@@ -17,6 +17,7 @@
   "core.title": "Core Settings",
   "createNewUser": "Create new user",
   "createUser": "Create User",
+  "createBulkUsers": "Create Bulk Users",
   "dataUsage": "data usage",
   "dateFormat": "MMMM d, yyy",
   "delete": "Delete",
