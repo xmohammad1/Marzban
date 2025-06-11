@@ -48,9 +48,12 @@ type DashboardStateType = {
   isShowingNodesUsage: boolean;
   isResetingAllUsage: boolean;
   isDeletingExpiredUsers: boolean;
+  isBulkDeleteMode: boolean;
   resetUsageUser: User | null;
   revokeSubscriptionUser: User | null;
   isEditingCore: boolean;
+  onBulkDeleteMode: (isBulkDeleteMode: boolean) => void;
+  deleteUsers: (users: User[]) => Promise<void>;
   onCreateUser: (isOpen: boolean) => void;
   onEditingUser: (user: User | null) => void;
   onDeletingUser: (user: User | null) => void;
@@ -115,6 +118,7 @@ export const useDashboard = create(
     loading: true,
     isResetingAllUsage: false,
     isDeletingExpiredUsers: false,
+    isBulkDeleteMode: false,
     isEditingHosts: false,
     isEditingNodes: false,
     isShowingNodesUsage: false,
@@ -150,6 +154,7 @@ export const useDashboard = create(
     onResetAllUsage: (isResetingAllUsage) => set({ isResetingAllUsage }),
     onDeletingExpiredUsers: (isDeletingExpiredUsers) =>
       set({ isDeletingExpiredUsers }),
+    onBulkDeleteMode: (isBulkDeleteMode) => set({ isBulkDeleteMode }),
     onCreateUser: (isCreatingNewUser) => set({ isCreatingNewUser }),
     onEditingUser: (editingUser) => {
       set({ editingUser });
@@ -176,6 +181,11 @@ export const useDashboard = create(
         get().refetchUsers();
         queryClient.invalidateQueries(StatisticsQueryKey);
       });
+    },
+    deleteUsers: async (users: User[]) => {
+      for (const user of users) {
+        await get().deleteUser(user);
+      }
     },
     createUser: async (body: UserCreate) => {
       await fetch(`/user`, { method: "POST", body });
