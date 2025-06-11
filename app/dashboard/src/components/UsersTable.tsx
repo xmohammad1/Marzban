@@ -396,8 +396,10 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                 return (
                   <Fragment key={user.username}>
                     <Tr
-                      onClick={toggleAccordion.bind(null, i)}
-                      cursor="pointer"
+                      onClick={
+                        isBulkDeleteMode ? undefined : toggleAccordion.bind(null, i)
+                      }
+                      cursor={isBulkDeleteMode ? "auto" : "pointer"}
                     >
                       <Td
                         borderBottom={0}
@@ -412,6 +414,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                               isChecked={selectedUsers.some(
                                 (u) => u.username === user.username
                               )}
+                              onClick={(e) => e.stopPropagation()}
                               onChange={(e) => {
                                 e.stopPropagation();
                                 toggleSelect(user, e.target.checked);
@@ -456,7 +459,9 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                     </Tr>
                     <Tr
                       className="collapsible"
-                      onClick={toggleAccordion.bind(null, i)}
+                      onClick={
+                        isBulkDeleteMode ? undefined : toggleAccordion.bind(null, i)
+                      }
                     >
                       <Td p={0} colSpan={4}>
                         <AccordionItem border={0}>
@@ -649,10 +654,13 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
               return (
                 <Tr
                   key={user.username}
-                  className={classNames("interactive", {
-                    "last-row": i === users.length - 1,
-                  })}
-                  onClick={() => onEditingUser(user)}
+                  className={classNames(
+                    { interactive: !isBulkDeleteMode },
+                    { "last-row": i === users.length - 1 }
+                  )}
+                  onClick={
+                    isBulkDeleteMode ? undefined : () => onEditingUser(user)
+                  }
                 >
                   <Td minW="140px">
                     <HStack className="flex-status">
@@ -661,6 +669,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                           isChecked={selectedUsers.some(
                             (u) => u.username === user.username
                           )}
+                          onClick={(e) => e.stopPropagation()}
                           onChange={(e) => {
                             e.stopPropagation();
                             toggleSelect(user, e.target.checked);
