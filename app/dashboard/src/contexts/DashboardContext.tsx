@@ -31,7 +31,6 @@ export type Inbounds = Map<ProtocolType, InboundType[]>;
 
 type DashboardStateType = {
   isCreatingNewUser: boolean;
-  isBulkCreating: boolean;
   editingUser: User | null | undefined;
   deletingUser: User | null;
   version: string | null;
@@ -52,7 +51,6 @@ type DashboardStateType = {
   revokeSubscriptionUser: User | null;
   isEditingCore: boolean;
   onCreateUser: (isOpen: boolean) => void;
-  onBulkCreate: (isBulk: boolean) => void;
   onEditingUser: (user: User | null) => void;
   onDeletingUser: (user: User | null) => void;
   onResetAllUsage: (isResetingAllUsage: boolean) => void;
@@ -105,7 +103,6 @@ export const useDashboard = create(
     editingUser: null,
     deletingUser: null,
     isCreatingNewUser: false,
-    isBulkCreating: false,
     QRcodeLinks: null,
     subscribeUrl: null,
     users: {
@@ -137,7 +134,6 @@ export const useDashboard = create(
     },
     onResetAllUsage: (isResetingAllUsage) => set({ isResetingAllUsage }),
     onCreateUser: (isCreatingNewUser) => set({ isCreatingNewUser }),
-    onBulkCreate: (isBulkCreating) => set({ isBulkCreating }),
     onEditingUser: (editingUser) => {
       set({ editingUser });
     },
