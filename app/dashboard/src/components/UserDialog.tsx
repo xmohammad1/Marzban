@@ -226,6 +226,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
     onEditingUser,
     createUser,
     onDeletingUser,
+    inbounds,
   } = useDashboard();
   const isEditing = !!editingUser;
   const isOpen = isCreatingNewUser || isEditing;
@@ -240,6 +241,13 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const handleUsageToggle = () => {
     setUsageVisible((current) => !current);
   };
+
+  const protocolsList = [
+    { title: "vmess", description: t("userDialog.vmessDesc") },
+    { title: "vless", description: t("userDialog.vlessDesc") },
+    { title: "trojan", description: t("userDialog.trojanDesc") },
+    { title: "shadowsocks", description: t("userDialog.shadowsocksDesc") },
+  ].filter(({ title }) => (inbounds.get(title as any) || []).length > 0);
 
   const form = useForm<FormType>({
     defaultValues: getDefaultValues(),
@@ -765,24 +773,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
                       render={({ field }) => {
                         return (
                           <RadioGroup
-                            list={[
-                              {
-                                title: "vmess",
-                                description: t("userDialog.vmessDesc"),
-                              },
-                              {
-                                title: "vless",
-                                description: t("userDialog.vlessDesc"),
-                              },
-                              {
-                                title: "trojan",
-                                description: t("userDialog.trojanDesc"),
-                              },
-                              {
-                                title: "shadowsocks",
-                                description: t("userDialog.shadowsocksDesc"),
-                              },
-                            ]}
+                            list={protocolsList}
                             disabled={disabled}
                             {...field}
                           />
