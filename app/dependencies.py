@@ -40,12 +40,17 @@ def validate_dates(start: Optional[Union[str, datetime]], end: Optional[Union[st
     """Validate if start and end dates are correct and if end is after start."""
     try:
         if start:
-            start_date = start if isinstance(start, datetime) else datetime.fromisoformat(
-                start).astimezone(timezone.utc)
+            start_date = start if isinstance(start, datetime) else datetime.fromisoformat(str(start))
+            if start_date.tzinfo is None:
+                start_date = start_date.replace(tzinfo=timezone.utc)
+            start_date = start_date.astimezone(timezone.utc)
         else:
             start_date = datetime.now(timezone.utc) - timedelta(days=30)
         if end:
-            end_date = end if isinstance(end, datetime) else datetime.fromisoformat(end).astimezone(timezone.utc)
+            end_date = end if isinstance(end, datetime) else datetime.fromisoformat(str(end))
+            if end_date.tzinfo is None:
+                end_date = end_date.replace(tzinfo=timezone.utc)
+            end_date = end_date.astimezone(timezone.utc)
             if start_date and end_date < start_date:
                 raise HTTPException(status_code=400, detail="Start date must be before end date")
         else:
