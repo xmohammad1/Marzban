@@ -87,7 +87,6 @@ export type UserDialogProps = {};
 
 export type FormType = Pick<UserCreate, keyof UserCreate> & {
   selected_proxies: ProxyKeys;
-  bulk_count?: number;
 };
 
 const formatUser = (user: User): FormType => {
@@ -117,7 +116,6 @@ const getDefaultValues = (): FormType => {
     status: "active",
     on_hold_expire_duration: null,
     note: "",
-    bulk_count: 1,
     inbounds,
     proxies: {
       vless: { id: "", flow: "" },
@@ -151,7 +149,6 @@ const baseSchema = {
     message: "userDialog.selectOneProtocol",
   }),
   note: z.string().nullable(),
-  bulk_count: z.coerce.number().min(1).optional(),
   proxies: z
     .record(z.string(), z.record(z.string(), z.any()))
     .transform((ins) => {
@@ -220,9 +217,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const {
     editingUser,
     isCreatingNewUser,
-    isBulkCreating,
     onCreateUser,
-    onBulkCreate,
     editUser,
     fetchUserUsage,
     onEditingUser,
@@ -313,39 +308,18 @@ export const UserDialog: FC<UserDialogProps> = () => {
           : "active",
     };
 
-    const create = () =>
-      methods[method](body).then(() => {
+    methods[method](body)
+      .then(() => {
         toast({
           title: t(
             isEditing ? "userDialog.userEdited" : "userDialog.userCreated",
-            { username: body.username }
+            { username: values.username }
           ),
           status: "success",
           isClosable: true,
           position: "top",
           duration: 3000,
         });
-      });
-
-    const promises: Promise<void>[] = [];
-    if (isBulkCreating && !isEditing) {
-      const count = values.bulk_count || 1;
-      for (let i = 0; i < count; i++) {
-        const match = values.username.match(/(\d+)$/);
-        const username =
-          i === 0
-            ? values.username
-            : match
-            ? values.username.replace(match[1], String(parseInt(match[1]) + i))
-            : values.username + (i + 1);
-        promises.push(createUser({ ...body, username }));
-      }
-    } else {
-      promises.push(create());
-    }
-
-    Promise.all(promises)
-      .then(() => {
         onClose();
       })
       .catch((err) => {
@@ -372,7 +346,6 @@ export const UserDialog: FC<UserDialogProps> = () => {
   const onClose = () => {
     form.reset(getDefaultValues());
     onCreateUser(false);
-    onBulkCreate(false);
     onEditingUser(null);
     setError(null);
     setUsageVisible(false);
@@ -509,26 +482,6 @@ export const UserDialog: FC<UserDialogProps> = () => {
                             )}
                           </HStack>
                         </FormControl>
-                        {!isEditing && isBulkCreating && (
-                          <FormControl mb={"10px"}>
-                            <FormLabel>{t("userDialog.bulkCount")}</FormLabel>
-                            <Controller
-                              control={form.control}
-                              name="bulk_count"
-                              render={({ field }) => (
-                                <Input
-                                  type="number"
-                                  min={1}
-                                  size="sm"
-                                  borderRadius="6px"
-                                  disabled={disabled}
-                                  error={form.formState.errors.bulk_count?.message}
-                                  {...field}
-                                />
-                              )}
-                            />
-                          </FormControl>
-                        )}
                         {!isEditing && (
                           <FormControl flex="1">
                             <FormLabel whiteSpace={"nowrap"}>
