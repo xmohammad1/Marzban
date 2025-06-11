@@ -29,7 +29,7 @@ export const DeleteExpiredIcon = chakra(TrashIcon, {
 });
 
 export const DeleteExpiredUsersModal: FC = () => {
-  const [days, setDays] = useState(0);
+  const [days, setDays] = useState("");
   const [loading, setLoading] = useState(false);
   const { isDeletingExpiredUsers, onDeletingExpiredUsers, deleteExpiredUsers } =
     useDashboard();
@@ -37,13 +37,13 @@ export const DeleteExpiredUsersModal: FC = () => {
   const toast = useToast();
 
   const onClose = () => {
-    setDays(0);
+    setDays("");
     onDeletingExpiredUsers(false);
   };
 
   const onDelete = () => {
     setLoading(true);
-    deleteExpiredUsers(days)
+    deleteExpiredUsers(Number(days))
       .then((removed) => {
         toast({
           title: t("deleteExpiredUsers.success", { count: removed.length }),
@@ -87,7 +87,7 @@ export const DeleteExpiredUsersModal: FC = () => {
             <Input
               type="number"
               value={days}
-              onChange={(e) => setDays(Number(e.target.value))}
+              onChange={(e) => setDays(e.target.value)}
             />
           </FormControl>
         </ModalBody>
