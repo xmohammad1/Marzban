@@ -44,8 +44,14 @@ const setSearchField = debounce((search: string) => {
 }, 300);
 
 export const Filters: FC<FilterProps> = ({ ...props }) => {
-  const { loading, filters, onFilterChange, refetchUsers, onCreateUser } =
-    useDashboard();
+  const {
+    loading,
+    filters,
+    onFilterChange,
+    refetchUsers,
+    onCreateUser,
+    onBulkCreate,
+  } = useDashboard();
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,6 +135,17 @@ export const Filters: FC<FilterProps> = ({ ...props }) => {
             px={5}
           >
             {t("createUser")}
+          </Button>
+          <Button
+            colorScheme="primary"
+            size="sm"
+            onClick={() => {
+              onBulkCreate(true);
+              onCreateUser(true);
+            }}
+            px={5}
+          >
+            {t("createBulkUsers")}
           </Button>
         </HStack>
       </GridItem>
