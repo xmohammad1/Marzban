@@ -161,12 +161,7 @@ export const Statistics: FC<BoxProps> = (props) => {
       />
       <StatisticCard
         title={t("dataUsage")}
-        content={
-          systemData &&
-          formatBytes(
-            systemData.incoming_bandwidth + systemData.outgoing_bandwidth
-          )
-        }
+        content={systemData && formatBytes(systemData.admin_usage)}
         icon={<NetworkIcon />}
       />
       <StatisticCard
