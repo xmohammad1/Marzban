@@ -412,7 +412,6 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                               isChecked={selectedUsers.some(
                                 (u) => u.username === user.username
                               )}
-                              onClick={(e) => e.stopPropagation()}
                               onChange={(e) => {
                                 e.stopPropagation();
                                 toggleSelect(user, e.target.checked);
@@ -662,7 +661,6 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                           isChecked={selectedUsers.some(
                             (u) => u.username === user.username
                           )}
-                          onClick={(e) => e.stopPropagation()}
                           onChange={(e) => {
                             e.stopPropagation();
                             toggleSelect(user, e.target.checked);
