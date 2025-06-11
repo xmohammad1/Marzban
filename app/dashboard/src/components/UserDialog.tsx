@@ -332,6 +332,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
         const count = values.bulk_count || 1;
         for (let i = 0; i < count; i++) {
           const username = `${values.username}_${i + 1}`;
+          // Ensure each user is created sequentially
           await createUser({ ...body, username });
         }
       } else {
