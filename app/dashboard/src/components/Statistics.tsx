@@ -8,7 +8,7 @@ import { FC, PropsWithChildren, ReactElement, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
 import { fetch } from "service/http";
-import { formatBytes, numberWithCommas } from "utils/formatByte";
+import { formatBytes, formatGB, numberWithCommas } from "utils/formatByte";
 
 const TotalUsersIcon = chakra(UsersIcon, {
   baseStyle: {
@@ -152,7 +152,7 @@ export const Statistics: FC<BoxProps> = (props) => {
       />
       <StatisticCard
         title={t("dataUsage")}
-        content={systemData && formatBytes(systemData.admin_usage)}
+        content={systemData && formatGB(systemData.admin_usage)}
         icon={<NetworkIcon />}
       />
     </HStack>
