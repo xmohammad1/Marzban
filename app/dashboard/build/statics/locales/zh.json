@@ -190,9 +190,4 @@
   "usersTable.status": "状态",
   "usersTable.sortByExpire": "按过期时间排序",
   "usersTable.total": "总共",
-  "deleteSelected": "删除已选",
-  "deleteSelectedUsers.title": "删除已选用户",
-  "deleteSelectedUsers.prompt": "确定删除选中的 {{count}} 个用户吗？",
-  "deleteSelectedUsers.success": "已删除 {{count}} 个用户。"
 }
-
