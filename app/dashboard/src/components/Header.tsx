@@ -99,6 +99,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
     onEditingNodes,
     onShowingNodesUsage,
     onDeletingExpiredUsers,
+    onBulkDeleteMode,
   } = useDashboard();
   const { t } = useTranslation();
   const { colorMode, toggleColorMode } = useColorMode();
@@ -180,13 +181,21 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
                   </MenuItem>
                 </>
               )}
-                <MenuItem
-                  maxW="200px"
-                  fontSize="sm"
-                  icon={<DeleteIcon w={4} h={4} />}
-                  onClick={() => onDeletingExpiredUsers(true)}
-                >
+              <MenuItem
+                maxW="200px"
+                fontSize="sm"
+                icon={<DeleteIcon w={4} h={4} />}
+                onClick={() => onDeletingExpiredUsers(true)}
+              >
                 {t("deleteExpiredUsers")}
+              </MenuItem>
+              <MenuItem
+                maxW="200px"
+                fontSize="sm"
+                icon={<DeleteIcon w={4} h={4} />}
+                onClick={() => onBulkDeleteMode(true)}
+              >
+                {t("deleteSelectedUsers")}
               </MenuItem>
               {/* <Link to={DONATION_URL} target="_blank">
                 <MenuItem

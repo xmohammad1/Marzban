@@ -5,6 +5,7 @@ import {
   AccordionPanel,
   Box,
   Button,
+  Checkbox,
   chakra,
   ExpandedIndex,
   HStack,
@@ -48,6 +49,7 @@ import { OnlineBadge } from "./OnlineBadge";
 import { OnlineStatus } from "./OnlineStatus";
 import { Pagination } from "./Pagination";
 import { StatusBadge } from "./StatusBadge";
+import { DeleteUsersModal } from "./DeleteUsersModal";
 
 const EmptySectionIcon = chakra(AddFileIcon);
 
@@ -193,15 +195,23 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
     users: totalUsers,
     onEditingUser,
     onFilterChange,
+    isBulkDeleteMode,
+    onBulkDeleteMode,
   } = useDashboard();
 
   const { t } = useTranslation();
   const [selectedRow, setSelectedRow] = useState<ExpandedIndex | undefined>(
     undefined
   );
+  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
+  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const marginTop = useBreakpointValue({ base: 120, lg: 72 }) || 72;
   const [top, setTop] = useState(`${marginTop}px`);
   const useTable = useBreakpointValue({ base: false, md: true });
+
+  useEffect(() => {
+    if (!isBulkDeleteMode) setSelectedUsers([]);
+  }, [isBulkDeleteMode]);
 
   useEffect(() => {
     const calcTop = () => {
@@ -239,8 +249,33 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
     setSelectedRow(index === selectedRow ? undefined : index);
   };
 
+  const toggleSelect = (user: User, checked: boolean) => {
+    if (checked) {
+      setSelectedUsers((prev) => [...prev, user]);
+    } else {
+      setSelectedUsers((prev) =>
+        prev.filter((u) => u.username !== user.username)
+      );
+    }
+  };
+
   return (
     <Box id="users-table" overflowX={{ base: "unset", md: "unset" }}>
+      {isBulkDeleteMode && (
+        <HStack mb={2} justifyContent="space-between">
+          <Button size="sm" onClick={() => onBulkDeleteMode(false)}>
+            {t("cancel")}
+          </Button>
+          <Button
+            size="sm"
+            colorScheme="red"
+            onClick={() => setDeleteModalOpen(true)}
+            isDisabled={selectedUsers.length === 0}
+          >
+            {t("delete")}
+          </Button>
+        </HStack>
+      )}
       <Accordion
         allowMultiple
         display={{ base: "block", md: "none" }}
@@ -353,10 +388,21 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                         pr={4}
                         maxW="calc(100vw - 50px - 32px - 100px - 48px)"
                       >
-                        <div className="flex-status">
+                        <HStack className="flex-status">
+                          {isBulkDeleteMode && (
+                            <Checkbox
+                              isChecked={selectedUsers.some(
+                                (u) => u.username === user.username
+                              )}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                toggleSelect(user, e.target.checked);
+                              }}
+                            />
+                          )}
                           <OnlineBadge lastOnline={user.online_at} />
                           <Text isTruncated>{user.username}</Text>
-                        </div>
+                        </HStack>
                       </Td>
                       <Td borderBottom={0} minW="50px" pl={0} pr={0}>
                         <StatusBadge
@@ -591,11 +637,22 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                   onClick={() => onEditingUser(user)}
                 >
                   <Td minW="140px">
-                    <div className="flex-status">
+                    <HStack className="flex-status">
+                      {isBulkDeleteMode && (
+                        <Checkbox
+                          isChecked={selectedUsers.some(
+                            (u) => u.username === user.username
+                          )}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            toggleSelect(user, e.target.checked);
+                          }}
+                        />
+                      )}
                       <OnlineBadge lastOnline={user.online_at} />
                       {user.username}
                       <OnlineStatus lastOnline={user.online_at} />
-                    </div>
+                    </HStack>
                   </Td>
                   <Td width="400px" minW="150px">
                     <StatusBadge
@@ -628,6 +685,11 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
         </Tbody>
       </Table>
       <Pagination />
+      <DeleteUsersModal
+        users={selectedUsers}
+        isOpen={isDeleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+      />
     </Box>
   );
 };
