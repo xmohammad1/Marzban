@@ -101,7 +101,7 @@ const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({
           {title}
         </Text>
       </HStack>
-      <Box fontSize="3xl" fontWeight="semibold" mt="2">
+      <Box fontSize="2xl" fontWeight="semibold" mt="2">
         {content}
       </Box>
     </Card>
