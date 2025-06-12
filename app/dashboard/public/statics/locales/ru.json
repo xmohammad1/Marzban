@@ -152,6 +152,7 @@
   "nodeModal.status.connected": "Подключен",
   "userDialog.absolute": "Абсолютно",
   "userDialog.custom": "Пользовательский",
+  "userDialog.general": "Основные",
   "userDialog.dataLimit": "Лимит трафика",
   "userDialog.days": "Дни",
   "userDialog.editUser": "Редактировать",
