@@ -343,7 +343,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                     {filters.status ? ": " + filters.status : ""}
                   </Text>
                   <Select
-                    value={filters.sort}
+                    value={filters.status ?? ""}
                     fontSize="xs"
                     fontWeight="extrabold"
                     textTransform="uppercase"
@@ -615,7 +615,7 @@ export const UsersTable: FC<UsersTableProps> = (props) => {
                   _focusVisible={{
                     border: "0 !important",
                   }}
-                  value={filters.sort}
+                  value={filters.status ?? ""}
                   onChange={handleStatusFilter}
                 >
                   <option></option>
