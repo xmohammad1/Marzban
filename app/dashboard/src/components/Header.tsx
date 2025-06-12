@@ -132,7 +132,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
       )} */}
       <Box overflow="auto" css={{ direction: "rtl" }}>
         <HStack alignItems="center">
-          <Menu>
+          <Menu autoSelect={false}>
             <MenuButton
               as={IconButton}
               size="sm"
