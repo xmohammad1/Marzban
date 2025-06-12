@@ -71,7 +71,8 @@ const TELEGRAM_BOT_URL =
   import.meta.env.VITE_TELEGRAM_BOT_URL ??
   "https://t.me/Myseniors_bot?start=goto_mypanel";
 const HIDE_TELEGRAM_BOT_BUTTON =
-  import.meta.env.VITE_HIDE_TELEGRAM_BOT_BUTTON === "true";
+  String(import.meta.env.VITE_HIDE_TELEGRAM_BOT_BUTTON ?? "")
+    .toLowerCase() === "true";
 
 export const shouldShowDonation = (): boolean => {
   const date = localStorage.getItem(NOTIFICATION_KEY);

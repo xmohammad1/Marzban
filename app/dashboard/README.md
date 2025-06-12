@@ -26,6 +26,12 @@ Copy `example.env` to `.env` then set the backend api address:
 | Name          | Description                                                                          |
 | ------------- | ------------------------------------------------------------------------------------ |
 | VITE_BASE_API | The api url of the deployed backend ([Marzban](https://github.com/xmohammad1/Marzban)) |
+| VITE_TELEGRAM_BOT_URL | The Telegram bot link shown in the header |
+| VITE_HIDE_TELEGRAM_BOT_BUTTON | Set to `true` to hide the Telegram bot button |
+
+After editing these variables, rebuild the dashboard using `npm run build` (or
+`./build_dashboard.sh` when working in the project root) so the changes take
+effect.
 
 ## Start development server
 
