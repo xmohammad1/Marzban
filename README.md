@@ -323,6 +323,8 @@ By default the app will be run on `http://localhost:8000/dashboard`. You can con
 | USER_AUTODELETE_INCLUDE_LIMITED_ACCOUNTS | Whether to include limited accounts in the auto-delete feature (default: `False`)                                        |
 | USE_CUSTOM_JSON_DEFAULT                  | Enable custom JSON config for ALL supported clients (default: `False`)                                                   |
 | USE_CUSTOM_JSON_FOR_V2RAYNG              | Enable custom JSON config only for V2rayNG (default: `False`)                                                            |
+| NODE_RECONNECT_ATTEMPTS                  | How many times to retry connecting a dropped node (default: `5`) |
+| NODE_RECONNECT_BACKOFF                   | Base seconds for exponential backoff between retries (default: `2`) |
 | USE_CUSTOM_JSON_FOR_STREISAND            | Enable custom JSON config only for Streisand (default: `False`)                                                          |
 | USE_CUSTOM_JSON_FOR_V2RAYN               | Enable custom JSON config only for V2rayN (default: `False`)                                                             |
 
