@@ -174,7 +174,20 @@ class ReSTXRayNode:
             res = self.make_request("/start", timeout=10, config=json_config)
         except NodeAPIError as exc:
             if exc.detail == 'Xray is started already':
-                return self.restart(config)
+                # Node's core is already running; just establish API connection
+                self._started = True
+                self._api = XRayAPI(
+                    address=self.address,
+                    port=self.api_port,
+                    ssl_cert=self._node_cert.encode(),
+                    ssl_target_name="Gozargah",
+                )
+
+                try:
+                    grpc.channel_ready_future(self._api._channel).result(timeout=5)
+                except grpc.FutureTimeoutError:
+                    raise ConnectionError('Failed to connect to node\'s API')
+                return {"detail": exc.detail}
             else:
                 raise exc
 
@@ -406,7 +419,13 @@ class RPyCXRayNode:
     def start(self, config: XRayConfig):
         config = self._prepare_config(config)
         json_config = config.to_json()
-        self.remote.start(json_config)
+        try:
+            self.remote.start(json_config)
+        except Exception as exc:
+            if 'Xray is started already' in str(exc):
+                pass
+            else:
+                raise
         self.started = True
 
         # connect to API
