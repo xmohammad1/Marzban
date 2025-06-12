@@ -165,6 +165,9 @@ class ReSTXRayNode:
         return self._api
 
     def connect(self):
+        if self._session_id:
+            self.disconnect()
+
         self._node_cert = ssl.get_server_certificate((self.address, self.port))
         self._node_certfile = string_to_temp_file(self._node_cert)
         self.session.verify = self._node_certfile.name
@@ -173,8 +176,37 @@ class ReSTXRayNode:
         self._session_id = res["session_id"]
 
     def disconnect(self):
-        self.make_request("/disconnect", timeout=3)
+        if not self._session_id:
+            return
+
+        try:
+            self.make_request("/disconnect", timeout=3)
+        except NodeAPIError:
+            pass
         self._session_id = None
+        self._api = None
+
+    def reconnect(self):
+        """Reconnect to a previously connected node without restarting Xray."""
+        self.connect()
+        try:
+            self._started = self.started
+        except NodeAPIError:
+            self._started = False
+
+        if self._started:
+            self._api = XRayAPI(
+                address=self.address,
+                port=self.api_port,
+                ssl_cert=self._node_cert.encode(),
+                ssl_target_name="Gozargah",
+            )
+            try:
+                grpc.channel_ready_future(self._api._channel).result(timeout=5)
+            except grpc.FutureTimeoutError:
+                raise ConnectionError("Failed to connect to node's API")
+        else:
+            self._api = None
 
     def reconnect(self):
         """Reconnect to a previously connected node without restarting Xray."""
