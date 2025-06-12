@@ -2,6 +2,7 @@ from functools import lru_cache
 from typing import TYPE_CHECKING
 
 from sqlalchemy.exc import SQLAlchemyError
+import grpc
 
 from app import logger, xray
 from app.db import GetDB, crud
@@ -207,8 +208,7 @@ def connect_node(node_id, config=None):
 
     try:
         node = xray.nodes[dbnode.id]
-        assert node.connected
-    except (KeyError, AssertionError):
+    except KeyError:
         node = xray.operations.add_node(dbnode)
 
     try:
@@ -217,10 +217,20 @@ def connect_node(node_id, config=None):
         _change_node_status(node_id, NodeStatus.connecting)
         logger.info(f"Connecting to \"{dbnode.name}\" node")
 
-        if config is None:
-            config = xray.config.include_db_users()
+        if not node.connected:
+            node.connect()
 
-        node.start(config)
+        if node.started:
+            node._started = True
+            node._api = None
+            try:
+                grpc.channel_ready_future(node.api._channel).result(timeout=5)
+            except grpc.FutureTimeoutError:
+                raise ConnectionError('Failed to connect to node\'s API')
+        else:
+            if config is None:
+                config = xray.config.include_db_users()
+            node.start(config)
         version = node.get_version()
         _change_node_status(node_id, NodeStatus.connected, version=version)
         logger.info(f"Connected to \"{dbnode.name}\" node, xray run on v{version}")
