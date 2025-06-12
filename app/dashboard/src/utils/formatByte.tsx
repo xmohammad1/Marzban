@@ -11,12 +11,11 @@ export function formatBytes(bytes: number, decimals = 2, asArray = false) {
   else return [parseFloat((bytes / Math.pow(k, i)).toFixed(dm)), sizes[i]];
 }
 
-export function formatGB(bytes: number, decimals = 2) {
+export function formatGB(bytes: number) {
   if (!+bytes) return "0 GB";
 
   const k = 1024;
-  const dm = decimals < 0 ? 0 : decimals;
-  return `${parseFloat((bytes / Math.pow(k, 3)).toFixed(dm))} GB`;
+  return `${Math.floor(bytes / Math.pow(k, 3))} GB`;
 }
 
 export const numberWithCommas = (x: number) => {
