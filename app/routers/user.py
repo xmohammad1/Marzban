@@ -16,6 +16,7 @@ from app.models.user import (
     UserStatus,
     UsersUsagesResponse,
     UserUsagesResponse,
+    DeleteUsersRequest,
 )
 from app.utils import report, responses
 
@@ -154,6 +155,38 @@ def remove_user(
 
     logger.info(f'User "{dbuser.username}" deleted')
     return {"detail": "User successfully deleted"}
+
+
+@router.delete("/users", response_model=List[str], responses={403: responses._403, 404: responses._404})
+def remove_users(
+    body: DeleteUsersRequest,
+    bg: BackgroundTasks,
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.get_current),
+):
+    """Remove multiple users"""
+    dbadmin = crud.get_admin(db, admin.username)
+    dbusers = crud.get_users(
+        db=db,
+        usernames=body.usernames,
+        admin=dbadmin if not admin.is_sudo else None,
+    )
+
+    if not dbusers:
+        raise HTTPException(status_code=404, detail="No users found")
+
+    crud.remove_users(db, dbusers)
+
+    for dbuser in dbusers:
+        logger.info(f'User "{dbuser.username}" deleted')
+        bg.add_task(
+            report.user_deleted,
+            username=dbuser.username,
+            user_admin=Admin.model_validate(dbuser.admin),
+            by=admin,
+        )
+
+    return [u.username for u in dbusers]
 
 
 @router.post("/user/{username}/reset", response_model=UserResponse, responses={403: responses._403, 404: responses._404})

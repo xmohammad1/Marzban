@@ -183,9 +183,10 @@ export const useDashboard = create(
       });
     },
     deleteUsers: async (users: User[]) => {
-      for (const user of users) {
-        await get().deleteUser(user);
-      }
+      const usernames = users.map((u) => u.username);
+      await fetch(`/users`, { method: "DELETE", body: { usernames } });
+      get().refetchUsers();
+      queryClient.invalidateQueries(StatisticsQueryKey);
     },
     createUser: async (body: UserCreate) => {
       await fetch(`/user`, { method: "POST", body });

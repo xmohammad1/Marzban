@@ -364,3 +364,8 @@ class UserUsagesResponse(BaseModel):
 
 class UsersUsagesResponse(BaseModel):
     usages: List[UserUsageResponse]
+
+
+class DeleteUsersRequest(BaseModel):
+    usernames: List[str]
+
