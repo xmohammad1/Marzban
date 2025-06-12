@@ -11,9 +11,6 @@ from app.utils.concurrency import threaded_function
 from app.xray.node import XRayNode
 from xray_api import XRay as XRayAPI
 from xray_api.types.account import Account, XTLSFlows
-from datetime import datetime
-import time
-from config import NODE_RECONNECT_ATTEMPTS, NODE_RECONNECT_BACKOFF
 
 if TYPE_CHECKING:
     from app.db import User as DBUser
@@ -195,7 +192,8 @@ global _connecting_nodes
 _connecting_nodes = {}
 
 
-def _connect_node(node_id, config=None):
+@threaded_function
+def connect_node(node_id, config=None):
     global _connecting_nodes
 
     if _connecting_nodes.get(node_id):
@@ -213,47 +211,29 @@ def _connect_node(node_id, config=None):
     except (KeyError, AssertionError):
         node = xray.operations.add_node(dbnode)
 
-    _connecting_nodes[node_id] = True
-    attempt = 0
-    backoff = NODE_RECONNECT_BACKOFF
-    while True:
-        attempt += 1
-        _change_node_status(node_id, NodeStatus.connecting)
-        logger.info(
-            f"Connecting to \"{dbnode.name}\" node (attempt {attempt}) at {datetime.utcnow().isoformat()}"
-        )
-
-        try:
-            cfg = config or xray.config.include_db_users()
-            node.start(cfg)
-            version = node.get_version()
-            _change_node_status(node_id, NodeStatus.connected, version=version)
-            logger.info(
-                f"Connected to \"{dbnode.name}\" node, xray run on v{version}"
-            )
-            break
-        except Exception as e:
-            _change_node_status(node_id, NodeStatus.error, message=str(e))
-            logger.warning(
-                f"Reconnect attempt {attempt} for node {node_id} failed: {e}"
-            )
-            if NODE_RECONNECT_ATTEMPTS and attempt >= NODE_RECONNECT_ATTEMPTS:
-                logger.error(
-                    f"Unable to connect to \"{dbnode.name}\" node after {attempt} attempts"
-                )
-                break
-
-            logger.info(f"Retrying in {backoff}s")
-            time.sleep(backoff)
-            backoff *= 2
-
     try:
-        del _connecting_nodes[node_id]
-    except KeyError:
-        pass
+        _connecting_nodes[node_id] = True
 
+        _change_node_status(node_id, NodeStatus.connecting)
+        logger.info(f"Connecting to \"{dbnode.name}\" node")
 
-connect_node = threaded_function(_connect_node)
+        if config is None:
+            config = xray.config.include_db_users()
+
+        node.start(config)
+        version = node.get_version()
+        _change_node_status(node_id, NodeStatus.connected, version=version)
+        logger.info(f"Connected to \"{dbnode.name}\" node, xray run on v{version}")
+
+    except Exception as e:
+        _change_node_status(node_id, NodeStatus.error, message=str(e))
+        logger.info(f"Unable to connect to \"{dbnode.name}\" node")
+
+    finally:
+        try:
+            del _connecting_nodes[node_id]
+        except KeyError:
+            pass
 
 
 @threaded_function
