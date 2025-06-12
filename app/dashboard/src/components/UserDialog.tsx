@@ -62,6 +62,11 @@ import { UsageFilter, createUsageConfig } from "./UsageFilter";
 import { ReloadIcon } from "./Filters";
 import classNames from "classnames";
 
+const getNumberAtEnd = (username: string): string | null => {
+  const match = username.match(/(\d+)$/);
+  return match ? match[1] : null;
+};
+
 const AddUserIcon = chakra(UserPlusIcon, {
   baseStyle: {
     w: 5,
@@ -340,12 +345,18 @@ export const UserDialog: FC<UserDialogProps> = () => {
     try {
       const count = values.bulk_count || 1;
       if (!isEditing && count > 1) {
+        const numberAtEnd = getNumberAtEnd(values.username);
         for (let i = 0; i < count; i++) {
-          const username = `${values.username}_${i + 1}`;
-          // Ensure each user is created sequentially
+          let username = values.username;
+          if (numberAtEnd) {
+            username = username.replace(
+              numberAtEnd,
+              String(Number(numberAtEnd) + i)
+            );
+          } else if (i > 0) {
+            username = `${values.username}_${i + 1}`;
+          }
           await createUser({ ...body, username });
-          // Add a small delay between each creation
-          await new Promise((resolve) => setTimeout(resolve, 5));
         }
       } else {
         await create();
