@@ -1,12 +1,12 @@
 import {
   chakra,
   IconButton,
-  Menu,
   MenuButton,
   MenuItemOption,
   MenuList,
   MenuOptionGroup,
 } from "@chakra-ui/react";
+import { NoAutoHighlightMenu } from "./NoAutoHighlightMenu";
 import { LanguageIcon } from "@heroicons/react/24/outline";
 import { FC, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
@@ -30,7 +30,7 @@ export const Language: FC<HeaderProps> = ({ actions }) => {
   };
 
   return (
-    <Menu placement="bottom-end">
+    <NoAutoHighlightMenu placement="bottom-end">
       <MenuButton
         as={IconButton}
         size="sm"
@@ -58,6 +58,6 @@ export const Language: FC<HeaderProps> = ({ actions }) => {
           </MenuItemOption>
         </MenuOptionGroup>
       </MenuList>
-    </Menu>
+    </NoAutoHighlightMenu>
   );
 };

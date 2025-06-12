@@ -4,13 +4,13 @@ import {
   chakra,
   HStack,
   IconButton,
-  Menu,
   MenuButton,
   MenuItem,
   MenuList,
   Text,
   useColorMode,
 } from "@chakra-ui/react";
+import { NoAutoHighlightMenu } from "./NoAutoHighlightMenu";
 import {
   ArrowLeftOnRectangleIcon,
   Bars3Icon,
@@ -132,7 +132,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
       )} */}
       <Box overflow="auto" css={{ direction: "rtl" }}>
         <HStack alignItems="center">
-          <Menu>
+          <NoAutoHighlightMenu>
             <MenuButton
               as={IconButton}
               size="sm"
@@ -217,7 +217,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
                 </MenuItem>
               </Link>
             </MenuList>
-          </Menu>
+          </NoAutoHighlightMenu>
 
           {isSudo() && (
             <IconButton
