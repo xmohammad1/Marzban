@@ -3,8 +3,9 @@ import {
   IconButton,
   Menu,
   MenuButton,
-  MenuItem,
+  MenuItemOption,
   MenuList,
+  MenuOptionGroup,
 } from "@chakra-ui/react";
 import { LanguageIcon } from "@heroicons/react/24/outline";
 import { FC, ReactNode } from "react";
@@ -38,34 +39,24 @@ export const Language: FC<HeaderProps> = ({ actions }) => {
         position="relative"
       />
       <MenuList minW="100px" zIndex={9999}>
-        <MenuItem
-          maxW="100px"
-          fontSize="sm"
-          onClick={() => changeLanguage("en")}
+        <MenuOptionGroup
+          type="radio"
+          value={i18n.language}
+          onChange={(value) => changeLanguage(value as string)}
         >
-          English
-        </MenuItem>
-        <MenuItem
-          maxW="100px"
-          fontSize="sm"
-          onClick={() => changeLanguage("fa")}
-        >
-          فارسی
-        </MenuItem>
-        <MenuItem
-          maxW="100px"
-          fontSize="sm"
-          onClick={() => changeLanguage("zh-cn")}
-        >
-          简体中文
-        </MenuItem>
-        <MenuItem
-          maxW="100px"
-          fontSize="sm"
-          onClick={() => changeLanguage("ru")}
-        >
-          Русский
-        </MenuItem>
+          <MenuItemOption maxW="100px" fontSize="sm" value="en">
+            English
+          </MenuItemOption>
+          <MenuItemOption maxW="100px" fontSize="sm" value="fa">
+            فارسی
+          </MenuItemOption>
+          <MenuItemOption maxW="100px" fontSize="sm" value="zh-cn">
+            简体中文
+          </MenuItemOption>
+          <MenuItemOption maxW="100px" fontSize="sm" value="ru">
+            Русский
+          </MenuItemOption>
+        </MenuOptionGroup>
       </MenuList>
     </Menu>
   );
