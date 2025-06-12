@@ -29,7 +29,7 @@ export const Language: FC<HeaderProps> = ({ actions }) => {
   };
 
   return (
-    <Menu placement="bottom-end">
+    <Menu placement="bottom-end" autoSelect={false}>
       <MenuButton
         as={IconButton}
         size="sm"
