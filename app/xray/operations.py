@@ -220,9 +220,7 @@ def connect_node(node_id, config=None):
         if config is None:
             config = xray.config.include_db_users()
 
-        node.connect()
-        if not node.started:
-            node.start(config)
+        node.start(config)
         version = node.get_version()
         _change_node_status(node_id, NodeStatus.connected, version=version)
         logger.info(f"Connected to \"{dbnode.name}\" node, xray run on v{version}")

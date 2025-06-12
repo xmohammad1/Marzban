@@ -155,24 +155,6 @@ class ReSTXRayNode:
         res = self.make_request("/connect", timeout=3)
         self._session_id = res['session_id']
 
-        try:
-            info = self.make_request("/", timeout=3)
-            self._started = info.get('started', False)
-        except NodeAPIError:
-            self._started = False
-
-        if self._started:
-            self._api = XRayAPI(
-                address=self.address,
-                port=self.api_port,
-                ssl_cert=self._node_cert.encode(),
-                ssl_target_name="Gozargah",
-            )
-            try:
-                grpc.channel_ready_future(self._api._channel).result(timeout=5)
-            except grpc.FutureTimeoutError:
-                raise ConnectionError("Failed to connect to node's API")
-
     def disconnect(self):
         self.make_request("/disconnect", timeout=3)
         self._session_id = None
