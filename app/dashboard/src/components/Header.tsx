@@ -67,6 +67,12 @@ const NotificationCircle = chakra(Box, {
 });
 
 const NOTIFICATION_KEY = "marzban-menu-notification";
+const TELEGRAM_BOT_URL =
+  import.meta.env.VITE_TELEGRAM_BOT_URL ??
+  "https://t.me/Myseniors_bot?start=goto_mypanel";
+const HIDE_TELEGRAM_BOT_BUTTON =
+  String(import.meta.env.VITE_HIDE_TELEGRAM_BOT_BUTTON ?? "")
+    .toLowerCase() === "true";
 
 export const shouldShowDonation = (): boolean => {
   const date = localStorage.getItem(NOTIFICATION_KEY);
@@ -267,9 +273,10 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
               Star
             </GitHubButton>
           </Box> */}
+            {!HIDE_TELEGRAM_BOT_BUTTON && (
             <Button
             as="a"
-            href="https://t.me/Myseniors_bot?start=goto_mypanel"
+            href={TELEGRAM_BOT_URL}
             target="_blank"
             rel="noopener noreferrer"
             size="sm"
@@ -277,6 +284,7 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
             >
             🤖
             </Button>
+            )}
         </HStack>
       </Box>
     </HStack>
