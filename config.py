@@ -136,12 +136,6 @@ SUB_UPDATE_INTERVAL = config("SUB_UPDATE_INTERVAL", default="12")
 SUB_SUPPORT_URL = config("SUB_SUPPORT_URL", default="https://t.me/")
 SUB_PROFILE_TITLE = config("SUB_PROFILE_TITLE", default="Subscription")
 
-TELEGRAM_BOT_URL = config(
-    "TELEGRAM_BOT_URL",
-    default="https://t.me/Myseniors_bot?start=goto_mypanel",
-)
-SHOW_TELEGRAM_BOT = config("SHOW_TELEGRAM_BOT", cast=bool, default=True)
-
 # discord webhook log
 DISCORD_WEBHOOK_URL = config("DISCORD_WEBHOOK_URL", default="")
 

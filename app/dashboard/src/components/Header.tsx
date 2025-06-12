@@ -108,12 +108,6 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
   );
   const gBtnColor = colorMode === "dark" ? "dark_dimmed" : colorMode;
 
-  const telegramBotUrl =
-    import.meta.env.VITE_TELEGRAM_BOT_URL ||
-    "https://t.me/Myseniors_bot?start=goto_mypanel";
-  const showTelegramBot =
-    import.meta.env.VITE_SHOW_TELEGRAM_BOT !== "false";
-
   const handleOnClose = () => {
     localStorage.setItem(NOTIFICATION_KEY, new Date().getTime().toString());
     setShowDonationNotif(false);
@@ -273,18 +267,16 @@ export const Header: FC<HeaderProps> = ({ actions }) => {
               Star
             </GitHubButton>
           </Box> */}
-            {showTelegramBot && (
-              <Button
-                as="a"
-                href={telegramBotUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                size="sm"
-                variant="outline"
-              >
-                🤖
-              </Button>
-            )}
+            <Button
+            as="a"
+            href="https://t.me/Myseniors_bot?start=goto_mypanel"
+            target="_blank"
+            rel="noopener noreferrer"
+            size="sm"
+            variant="outline"
+            >
+            🤖
+            </Button>
         </HStack>
       </Box>
     </HStack>
