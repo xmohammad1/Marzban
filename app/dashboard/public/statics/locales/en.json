@@ -152,6 +152,7 @@
   "nodeModal.status.connected": "Connected",
   "userDialog.absolute": "Absolute",
   "userDialog.custom": "Custom",
+  "userDialog.general": "General",
   "userDialog.dataLimit": "Data Limit",
   "userDialog.days": "Days",
   "userDialog.editUser": "Edit user",

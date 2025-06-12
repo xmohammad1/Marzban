@@ -152,6 +152,7 @@
   "nodeModal.status.connected": "已连接",
   "userDialog.absolute": "选择范围",
   "userDialog.custom": "自定义",
+  "userDialog.general": "基本",
   "userDialog.dataLimit": "流量限制",
   "userDialog.days": "天",
   "userDialog.editUser": "修改",
