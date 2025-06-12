@@ -4,7 +4,13 @@ import subprocess
 from pathlib import Path
 
 from app import app
-from config import DEBUG, VITE_BASE_API, DASHBOARD_PATH
+from config import (
+    DEBUG,
+    VITE_BASE_API,
+    DASHBOARD_PATH,
+    TELEGRAM_BOT_URL,
+    SHOW_TELEGRAM_BOT,
+)
 from fastapi.staticfiles import StaticFiles
 
 base_dir = Path(__file__).parent
@@ -15,7 +21,12 @@ statics_dir = build_dir / 'statics'
 def build():
     proc = subprocess.Popen(
         ['npm', 'run', 'build', '--',  '--outDir', build_dir, '--assetsDir', 'statics'],
-        env={**os.environ, 'VITE_BASE_API': VITE_BASE_API},
+        env={
+            **os.environ,
+            'VITE_BASE_API': VITE_BASE_API,
+            'VITE_TELEGRAM_BOT_URL': TELEGRAM_BOT_URL,
+            'VITE_SHOW_TELEGRAM_BOT': str(SHOW_TELEGRAM_BOT).lower(),
+        },
         cwd=base_dir
     )
     proc.wait()
@@ -28,7 +39,12 @@ def build():
 def run_dev():
     proc = subprocess.Popen(
         ['npm', 'run', 'dev', '--', '--host', '0.0.0.0', '--clearScreen', 'false', '--base', os.path.join(DASHBOARD_PATH, '')],
-        env={**os.environ, 'VITE_BASE_API': VITE_BASE_API},
+        env={
+            **os.environ,
+            'VITE_BASE_API': VITE_BASE_API,
+            'VITE_TELEGRAM_BOT_URL': TELEGRAM_BOT_URL,
+            'VITE_SHOW_TELEGRAM_BOT': str(SHOW_TELEGRAM_BOT).lower(),
+        },
         cwd=base_dir
     )
 
