@@ -142,14 +142,23 @@ class ReSTXRayNode:
         if not self._session_id:
             raise ConnectionError("Node is not connected")
 
-        if not self._api:
-            if self._started is True:
+        if not self._api or not self._started:
+            try:
+                self._started = self.started
+            except NodeAPIError:
+                self._started = False
+
+            if self._started:
                 self._api = XRayAPI(
                     address=self.address,
                     port=self.api_port,
                     ssl_cert=self._node_cert.encode(),
                     ssl_target_name="Gozargah",
                 )
+                try:
+                    grpc.channel_ready_future(self._api._channel).result(timeout=5)
+                except grpc.FutureTimeoutError:
+                    raise ConnectionError("Failed to connect to node's API")
             else:
                 raise ConnectionError("Node is not started")
 
@@ -437,8 +446,25 @@ class RPyCXRayNode:
         if not self.connected:
             raise ConnectionError("Node is not connected")
 
-        if not self.started:
-            raise ConnectionError("Node is not started")
+        if not self.started or not self._api:
+            try:
+                self.started = bool(self.remote.fetch_xray_version())
+            except Exception:
+                self.started = False
+
+            if self.started:
+                self._api = XRayAPI(
+                    address=self.address,
+                    port=self.api_port,
+                    ssl_cert=self._node_cert.encode(),
+                    ssl_target_name="Gozargah",
+                )
+                try:
+                    grpc.channel_ready_future(self._api._channel).result(timeout=5)
+                except grpc.FutureTimeoutError:
+                    raise ConnectionError("Failed to connect to node's API")
+            else:
+                raise ConnectionError("Node is not started")
 
         return self._api
 
