@@ -1815,14 +1815,15 @@ def confirm_user_command(call: types.CallbackQuery):
         if not mem_store.get(f"{call.message.chat.id}:is_bulk", False):
             number = 1
 
+        users_to_create = []
         for i in range(number):
             proxies = copy.deepcopy(original_proxies)
             username: str = mem_store.get(f'{call.message.chat.id}:username')
             if mem_store.get(f"{call.message.chat.id}:is_bulk", False):
                 if n := get_number_at_end(username):
-                    username = username.replace(n, str(int(n)+i))
+                    username = username.replace(n, str(int(n) + i))
                 else:
-                    username += str(i+1) if i > 0 else ""
+                    username += str(i + 1)
             if user_status == 'onhold':
                 expire_days = mem_store.get(f'{call.message.chat.id}:expire_date')
                 onhold_timeout = mem_store.get(f'{call.message.chat.id}:onhold_timeout')
@@ -1854,9 +1855,15 @@ def confirm_user_command(call: types.CallbackQuery):
                         f'❌ Protocol {proxy_type} is disabled on your server',
                         show_alert=True
                     )
-            try:
-                with GetDB() as db:
-                    db_user = crud.create_user(db, new_user)
+            users_to_create.append(new_user)
+
+        try:
+            with GetDB() as db:
+                if len(users_to_create) > 1:
+                    db_users = crud.create_users_bulk(db, users_to_create)
+                else:
+                    db_users = [crud.create_user(db, users_to_create[0])]
+                for db_user in db_users:
                     proxies = db_user.proxies
                     user = UserResponse.model_validate(db_user)
                     xray.operations.add_user(db_user)
@@ -1876,14 +1883,15 @@ def confirm_user_command(call: types.CallbackQuery):
                             call.message.chat.id,
                             call.message.message_id,
                             parse_mode="HTML",
-                            reply_markup=BotKeyboard.user_menu(user_info={'status': user.status, 'username': user.username}))
-            except sqlalchemy.exc.IntegrityError:
-                db.rollback()
-                return bot.answer_callback_query(
-                    call.id,
-                    '❌ Username already exists.',
-                    show_alert=True
-                )
+                            reply_markup=BotKeyboard.user_menu(
+                                user_info={'status': user.status, 'username': user.username}))
+        except sqlalchemy.exc.IntegrityError:
+            db.rollback()
+            return bot.answer_callback_query(
+                call.id,
+                '❌ Username already exists.',
+                show_alert=True
+            )
             if TELEGRAM_LOGGER_CHANNEL_ID:
                 text = f"""\
 🆕 <b>#Created #From_Bot</b>

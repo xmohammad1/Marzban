@@ -403,6 +403,54 @@ def create_user(db: Session, user: UserCreate, admin: Admin = None) -> User:
     return dbuser
 
 
+def create_users_bulk(db: Session, users: List[UserCreate], admin: Admin = None) -> List[User]:
+    """Create multiple users in a single transaction."""
+    dbusers: List[User] = []
+    for user in users:
+        excluded_inbounds_tags = user.excluded_inbounds
+        proxies = []
+        for proxy_type, settings in user.proxies.items():
+            excluded_inbounds = [
+                get_or_create_inbound(db, tag) for tag in excluded_inbounds_tags[proxy_type]
+            ]
+            proxies.append(
+                Proxy(
+                    type=proxy_type.value,
+                    settings=settings.dict(no_obj=True),
+                    excluded_inbounds=excluded_inbounds,
+                )
+            )
+
+        dbuser = User(
+            username=user.username,
+            proxies=proxies,
+            status=user.status,
+            data_limit=(user.data_limit or None),
+            expire=(user.expire or None),
+            admin=admin,
+            data_limit_reset_strategy=user.data_limit_reset_strategy,
+            note=user.note,
+            on_hold_expire_duration=(user.on_hold_expire_duration or None),
+            on_hold_timeout=(user.on_hold_timeout or None),
+            auto_delete_in_days=user.auto_delete_in_days,
+            next_plan=NextPlan(
+                data_limit=user.next_plan.data_limit,
+                expire=user.next_plan.expire,
+                add_remaining_traffic=user.next_plan.add_remaining_traffic,
+                fire_on_either=user.next_plan.fire_on_either,
+            )
+            if user.next_plan
+            else None,
+        )
+        db.add(dbuser)
+        dbusers.append(dbuser)
+
+    db.commit()
+    for u in dbusers:
+        db.refresh(u)
+    return dbusers
+
+
 def remove_user(db: Session, dbuser: User) -> User:
     """
     Removes a user from the database.
