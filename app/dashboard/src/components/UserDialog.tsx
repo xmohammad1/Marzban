@@ -60,6 +60,9 @@ import { Input } from "./Input";
 import { RadioGroup } from "./RadioGroup";
 import { UsageFilter, createUsageConfig } from "./UsageFilter";
 import { ReloadIcon } from "./Filters";
+import { fetch } from "service/http";
+import { queryClient } from "utils/react-query";
+import { StatisticsQueryKey } from "./Statistics";
 import classNames from "classnames";
 
 const getNumberAtEnd = (username: string): string | null => {
@@ -347,17 +350,27 @@ export const UserDialog: FC<UserDialogProps> = () => {
       if (!isEditing && count > 1) {
         const numberAtEnd = getNumberAtEnd(values.username);
         for (let i = 0; i < count; i++) {
-          let username = values.username;
+          let username: string;
           if (numberAtEnd) {
-            username = username.replace(
+            username = values.username.replace(
               numberAtEnd,
               String(Number(numberAtEnd) + i)
             );
-          } else if (i > 0) {
+          } else {
             username = `${values.username}_${i + 1}`;
           }
-          await createUser({ ...body, username });
+          await fetch(`/user`, { method: "POST", body: { ...body, username } });
+          toast({
+            title: t("userDialog.userCreated", { username }),
+            status: "success",
+            isClosable: true,
+            position: "top",
+            duration: 3000,
+          });
         }
+        useDashboard.getState().refetchUsers();
+        queryClient.invalidateQueries(StatisticsQueryKey);
+        useDashboard.setState({ editingUser: null });
       } else {
         await create();
       }
