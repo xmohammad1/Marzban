@@ -70,6 +70,23 @@ const getNumberAtEnd = (username: string): string | null => {
   return match ? match[1] : null;
 };
 
+const escapeRegExp = (value: string) =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const getNextIndex = (base: string): number => {
+  const users = useDashboard.getState().users.users;
+  const regex = new RegExp(`^${escapeRegExp(base)}(\\d+)$`);
+  let max = 0;
+  for (const { username } of users) {
+    const match = username.match(regex);
+    if (match) {
+      const num = Number(match[1]);
+      if (num > max) max = num;
+    }
+  }
+  return max + 1;
+};
+
 const AddUserIcon = chakra(UserPlusIcon, {
   baseStyle: {
     w: 5,
@@ -348,17 +365,16 @@ export const UserDialog: FC<UserDialogProps> = () => {
     try {
       const count = values.bulk_count || 1;
       if (!isEditing && count > 1) {
-        const numberAtEnd = getNumberAtEnd(values.username);
+        const trailing = getNumberAtEnd(values.username);
+        const base = trailing
+          ? values.username.slice(0, -trailing.length)
+          : `${values.username}_`;
+        let nextIndex = getNextIndex(base);
+        if (trailing) {
+          nextIndex = Math.max(nextIndex, Number(trailing));
+        }
         for (let i = 0; i < count; i++) {
-          let username: string;
-          if (numberAtEnd) {
-            username = values.username.replace(
-              numberAtEnd,
-              String(Number(numberAtEnd) + i)
-            );
-          } else {
-            username = `${values.username}_${i + 1}`;
-          }
+          const username = `${base}${nextIndex + i}`;
           await fetch(`/user`, { method: "POST", body: { ...body, username } });
           toast({
             title: t("userDialog.userCreated", { username }),
