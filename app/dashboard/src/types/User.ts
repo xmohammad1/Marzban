@@ -65,6 +65,8 @@ export type UserCreate = Pick<
   | "note"
 >;
 
+export type BulkUserCreate = UserCreate & { bulk_count: number };
+
 export type UserApi = {
   discord_webook: string;
   is_sudo: boolean;

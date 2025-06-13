@@ -10,6 +10,7 @@ from app.dependencies import get_expired_users_list, get_validated_user, validat
 from app.models.admin import Admin
 from app.models.user import (
     UserCreate,
+    BulkUserCreate,
     UserModify,
     UserResponse,
     UsersResponse,
@@ -19,7 +20,8 @@ from app.models.user import (
 )
 from app.utils import report, responses
 
-router = APIRouter(tags=["User"], prefix="/api", responses={401: responses._401})
+router = APIRouter(tags=["User"], prefix="/api",
+                   responses={401: responses._401})
 
 
 @router.post("/user", response_model=UserResponse, responses={400: responses._400, 409: responses._409})
@@ -64,9 +66,45 @@ def add_user(
 
     bg.add_task(xray.operations.add_user, dbuser=dbuser)
     user = UserResponse.model_validate(dbuser)
-    report.user_created(user=user, user_id=dbuser.id, by=admin, user_admin=dbuser.admin)
+    report.user_created(user=user, user_id=dbuser.id,
+                        by=admin, user_admin=dbuser.admin)
     logger.info(f'New user "{dbuser.username}" added')
     return user
+
+
+@router.post("/users/bulk", response_model=List[UserResponse], responses={400: responses._400, 409: responses._409})
+def add_users_bulk(
+    bulk_user: BulkUserCreate,
+    bg: BackgroundTasks,
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.get_current),
+):
+    for proxy_type in bulk_user.proxies:
+        if not xray.config.inbounds_by_protocol.get(proxy_type):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Protocol {proxy_type} is disabled on your server",
+            )
+
+    users = []
+    template = bulk_user.model_dump(exclude={"bulk_count"})
+    for i in range(bulk_user.bulk_count):
+        data = {**template, "username": f"{bulk_user.username}_{i + 1}"}
+        try:
+            new_user = UserCreate.model_validate(data)
+            dbuser = crud.create_user(
+                db, new_user, admin=crud.get_admin(db, admin.username))
+        except IntegrityError:
+            db.rollback()
+            raise HTTPException(status_code=409, detail="User already exists")
+        bg.add_task(xray.operations.add_user, dbuser=dbuser)
+        user = UserResponse.model_validate(dbuser)
+        report.user_created(user=user, user_id=dbuser.id,
+                            by=admin, user_admin=dbuser.admin)
+        logger.info(f'New user "{dbuser.username}" added')
+        users.append(user)
+
+    return users
 
 
 @router.get("/user/{username}", response_model=UserResponse, responses={403: responses._403, 404: responses._404})
@@ -117,7 +155,8 @@ def modify_user(
     else:
         bg.add_task(xray.operations.remove_user, dbuser=dbuser)
 
-    bg.add_task(report.user_updated, user=user, user_admin=dbuser.admin, by=admin)
+    bg.add_task(report.user_updated, user=user,
+                user_admin=dbuser.admin, by=admin)
 
     logger.info(f'User "{user.username}" modified')
 
@@ -307,7 +346,8 @@ def get_users_usage(
     start, end = validate_dates(start, end)
 
     usages = crud.get_all_users_usages(
-        db=db, start=start, end=end, admin=owner if admin.is_sudo else [admin.username]
+        db=db, start=start, end=end, admin=owner if admin.is_sudo else [
+            admin.username]
     )
 
     return {"usages": usages}
@@ -335,8 +375,10 @@ def set_owner(
 
 @router.get("/users/expired", response_model=List[str])
 def get_expired_users(
-    expired_after: Optional[datetime] = Query(None, example="2024-01-01T00:00:00"),
-    expired_before: Optional[datetime] = Query(None, example="2024-01-31T23:59:59"),
+    expired_after: Optional[datetime] = Query(
+        None, example="2024-01-01T00:00:00"),
+    expired_before: Optional[datetime] = Query(
+        None, example="2024-01-31T23:59:59"),
     db: Session = Depends(get_db),
     admin: Admin = Depends(Admin.get_current),
 ):
@@ -349,17 +391,21 @@ def get_expired_users(
     - If both are omitted, returns all expired users
     """
 
-    expired_after, expired_before = validate_dates(expired_after, expired_before)
+    expired_after, expired_before = validate_dates(
+        expired_after, expired_before)
 
-    expired_users = get_expired_users_list(db, admin, expired_after, expired_before)
+    expired_users = get_expired_users_list(
+        db, admin, expired_after, expired_before)
     return [u.username for u in expired_users]
 
 
 @router.delete("/users/expired", response_model=List[str])
 def delete_expired_users(
     bg: BackgroundTasks,
-    expired_after: Optional[datetime] = Query(None, example="2024-01-01T00:00:00"),
-    expired_before: Optional[datetime] = Query(None, example="2024-01-31T23:59:59"),
+    expired_after: Optional[datetime] = Query(
+        None, example="2024-01-01T00:00:00"),
+    expired_before: Optional[datetime] = Query(
+        None, example="2024-01-31T23:59:59"),
     db: Session = Depends(get_db),
     admin: Admin = Depends(Admin.get_current),
 ):
@@ -370,9 +416,11 @@ def delete_expired_users(
     - **expired_before** UTC datetime (optional)
     - At least one of expired_after or expired_before must be provided
     """
-    expired_after, expired_before = validate_dates(expired_after, expired_before)
+    expired_after, expired_before = validate_dates(
+        expired_after, expired_before)
 
-    expired_users = get_expired_users_list(db, admin, expired_after, expired_before)
+    expired_users = get_expired_users_list(
+        db, admin, expired_after, expired_before)
     removed_users = [u.username for u in expired_users]
 
     if not removed_users:
