@@ -345,7 +345,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
           // Ensure each user is created sequentially
           await createUser({ ...body, username });
           // Add a small delay between each creation
-          await new Promise((resolve) => setTimeout(resolve, 5));
+          await new Promise((resolve) => setTimeout(resolve, 10));
         }
       } else {
         await create();
