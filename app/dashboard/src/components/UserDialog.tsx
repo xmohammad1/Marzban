@@ -225,6 +225,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
     fetchUserUsage,
     onEditingUser,
     createUser,
+    createBulkUsers,
     onDeletingUser,
     inbounds,
   } = useDashboard();
@@ -340,13 +341,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
     try {
       const count = values.bulk_count || 1;
       if (!isEditing && count > 1) {
-        for (let i = 0; i < count; i++) {
-          const username = `${values.username}_${i + 1}`;
-          // Ensure each user is created sequentially
-          await createUser({ ...body, username });
-          // Add a small delay between each creation
-          await new Promise((resolve) => setTimeout(resolve, 5));
-        }
+        await createBulkUsers({ ...body, bulk_count: count });
       } else {
         await create();
       }

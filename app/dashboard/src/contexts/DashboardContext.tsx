@@ -1,6 +1,6 @@
 import { StatisticsQueryKey } from "components/Statistics";
 import { fetch } from "service/http";
-import { User, UserCreate } from "types/User";
+import { User, UserCreate, BulkUserCreate } from "types/User";
 import { queryClient } from "utils/react-query";
 import { getUsersPerPageLimitSize } from "utils/userPreferenceStorage";
 import { create } from "zustand";
@@ -65,6 +65,7 @@ type DashboardStateType = {
   onFilterChange: (filters: Partial<FilterType>) => void;
   deleteUser: (user: User) => Promise<void>;
   createUser: (user: UserCreate) => Promise<void>;
+  createBulkUsers: (users: BulkUserCreate) => Promise<void>;
   editUser: (user: UserCreate) => Promise<void>;
   fetchUserUsage: (user: User, query: FilterUsageType) => Promise<void>;
   setQRCode: (links: string[] | null) => void;
@@ -187,6 +188,12 @@ export const useDashboard = create(
     },
     createUser: async (body: UserCreate) => {
       await fetch(`/user`, { method: "POST", body });
+      set({ editingUser: null });
+      get().refetchUsers();
+      queryClient.invalidateQueries(StatisticsQueryKey);
+    },
+    createBulkUsers: async (body: BulkUserCreate) => {
+      await fetch(`/users/bulk`, { method: "POST", body });
       set({ editingUser: null });
       get().refetchUsers();
       queryClient.invalidateQueries(StatisticsQueryKey);

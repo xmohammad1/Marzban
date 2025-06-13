@@ -203,6 +203,11 @@ class UserCreate(User):
         return status
 
 
+class BulkUserCreate(UserCreate):
+    bulk_count: int = Field(1, ge=1, description="Number of users to create")
+
+
+
 class UserModify(User):
     status: UserStatusModify = None
     data_limit_reset_strategy: UserDataLimitResetStrategy = None

@@ -10,6 +10,7 @@ from app.dependencies import get_expired_users_list, get_validated_user, validat
 from app.models.admin import Admin
 from app.models.user import (
     UserCreate,
+    BulkUserCreate,
     UserModify,
     UserResponse,
     UsersResponse,
@@ -67,6 +68,46 @@ def add_user(
     report.user_created(user=user, user_id=dbuser.id, by=admin, user_admin=dbuser.admin)
     logger.info(f'New user "{dbuser.username}" added')
     return user
+
+
+@router.post("/users/bulk", response_model=List[UserResponse], responses={400: responses._400, 409: responses._409})
+def add_bulk_users(
+    bulk_user: BulkUserCreate,
+    bg: BackgroundTasks,
+    db: Session = Depends(get_db),
+    admin: Admin = Depends(Admin.get_current),
+):
+    """Add multiple users sequentially"""
+
+    created_users = []
+
+    for i in range(bulk_user.bulk_count):
+        username = f"{bulk_user.username}_{i + 1}"
+        new_user = bulk_user.model_copy()
+        new_user.username = username
+
+        for proxy_type in new_user.proxies:
+            if not xray.config.inbounds_by_protocol.get(proxy_type):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Protocol {proxy_type} is disabled on your server",
+                )
+
+        try:
+            dbuser = crud.create_user(
+                db, new_user, admin=crud.get_admin(db, admin.username)
+            )
+        except IntegrityError:
+            db.rollback()
+            raise HTTPException(status_code=409, detail="User already exists")
+
+        bg.add_task(xray.operations.add_user, dbuser=dbuser)
+        user = UserResponse.model_validate(dbuser)
+        report.user_created(user=user, user_id=dbuser.id, by=admin, user_admin=dbuser.admin)
+        logger.info(f'New user "{dbuser.username}" added')
+        created_users.append(user)
+
+    return created_users
 
 
 @router.get("/user/{username}", response_model=UserResponse, responses={403: responses._403, 404: responses._404})
