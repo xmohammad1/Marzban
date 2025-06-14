@@ -151,7 +151,7 @@ const baseSchema = {
     message: "userDialog.selectOneProtocol",
   }),
   note: z.string().nullable(),
-  bulk_count: z.coerce.number().min(1).optional(),
+  bulk_count: z.coerce.number().min(1).max(15).optional(),
   proxies: z
     .record(z.string(), z.record(z.string(), z.any()))
     .transform((ins) => {
@@ -338,7 +338,7 @@ export const UserDialog: FC<UserDialogProps> = () => {
       });
 
     try {
-      const count = values.bulk_count || 1;
+      const count = Math.min(values.bulk_count || 1, 15);
       if (!isEditing && count > 1) {
         for (let i = 0; i < count; i++) {
           const username = `${values.username}_${i + 1}`;
@@ -408,10 +408,10 @@ export const UserDialog: FC<UserDialogProps> = () => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="2xl">
+    <Modal isOpen={isOpen} onClose={onClose} size="xl">
       <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(10px)" />
       <FormProvider {...form}>
-        <ModalContent mx="3">
+        <ModalContent mx="3" maxH="80vh" overflowY="auto">
           <form onSubmit={form.handleSubmit(submit)}>
             <ModalHeader pt={6}>
               <HStack gap={2}>
@@ -544,27 +544,6 @@ export const UserDialog: FC<UserDialogProps> = () => {
                           </FormControl>
                         )}
                       </Flex>
-                      {!isEditing && (
-                        <FormControl mb={"10px"}>
-                          <FormLabel>{t("userDialog.bulkCount")}</FormLabel>
-                          <Controller
-                            control={form.control}
-                            name="bulk_count"
-                            render={({ field }) => (
-                              <Input
-                                type="number"
-                                min={1}
-                                size="sm"
-                                borderRadius="6px"
-                                disabled={disabled}
-                                error={form.formState.errors.bulk_count?.message}
-                                value={field.value ? String(field.value) : ""}
-                                onChange={field.onChange}
-                              />
-                            )}
-                          />
-                        </FormControl>
-                      )}
                       <FormControl mb={"10px"}>
                         <FormLabel>{t("userDialog.dataLimit")}</FormLabel>
                         <Controller
@@ -741,6 +720,29 @@ export const UserDialog: FC<UserDialogProps> = () => {
                           />
                         )}
                       </FormControl>
+
+                      {!isEditing && (
+                        <FormControl mb={"10px"}>
+                          <FormLabel>{t("userDialog.bulkCount")}</FormLabel>
+                          <Controller
+                            control={form.control}
+                            name="bulk_count"
+                            render={({ field }) => (
+                              <Input
+                                type="number"
+                                min={1}
+                                max={15}
+                                size="sm"
+                                borderRadius="6px"
+                                disabled={disabled}
+                                error={form.formState.errors.bulk_count?.message}
+                                value={field.value ? String(field.value) : ""}
+                                onChange={field.onChange}
+                              />
+                            )}
+                          />
+                        </FormControl>
+                      )}
 
                       <FormControl
                         mb={"10px"}
