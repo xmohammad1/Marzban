@@ -1,6 +1,5 @@
 from functools import lru_cache
 from typing import TYPE_CHECKING
-import time
 
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -221,22 +220,10 @@ def connect_node(node_id, config=None):
         if config is None:
             config = xray.config.include_db_users()
 
-        for attempt in range(3):
-            try:
-                node.start(config)
-                version = node.get_version()
-                _change_node_status(node_id, NodeStatus.connected, version=version)
-                logger.info(
-                    f"Connected to \"{dbnode.name}\" node, xray run on v{version}"
-                )
-                break
-            except Exception as e:
-                if attempt == 2:
-                    raise
-                logger.info(
-                    f"Connection attempt {attempt + 1} failed: {e}. Retrying..."
-                )
-                time.sleep(2)
+        node.start(config)
+        version = node.get_version()
+        _change_node_status(node_id, NodeStatus.connected, version=version)
+        logger.info(f"Connected to \"{dbnode.name}\" node, xray run on v{version}")
 
     except Exception as e:
         _change_node_status(node_id, NodeStatus.error, message=str(e))
