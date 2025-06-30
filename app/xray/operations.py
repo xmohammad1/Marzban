@@ -5,6 +5,7 @@ import time
 from sqlalchemy.exc import SQLAlchemyError
 
 from app import logger, xray
+from config import NODE_API_RETRIES
 from app.db import GetDB, crud
 from app.models.node import NodeStatus
 from app.models.user import UserResponse
@@ -21,12 +22,10 @@ if TYPE_CHECKING:
 @lru_cache(maxsize=None)
 def get_tls():
     from app.db import GetDB, get_tls_certificate
+
     with GetDB() as db:
         tls = get_tls_certificate(db)
-        return {
-            "key": tls.key,
-            "certificate": tls.certificate
-        }
+        return {"key": tls.key, "certificate": tls.certificate}
 
 
 @threaded_function
@@ -72,16 +71,13 @@ def add_user(dbuser: "DBUser"):
             account = proxy_type.account_model(email=email, **proxy_settings)
 
             # XTLS currently only supports transmission methods of TCP and mKCP
-            if getattr(account, 'flow', None) and (
-                inbound.get('network', 'tcp') not in ('tcp', 'kcp')
-                or
-                (
-                    inbound.get('network', 'tcp') in ('tcp', 'kcp')
-                    and
-                    inbound.get('tls') not in ('tls', 'reality')
+            if getattr(account, "flow", None) and (
+                inbound.get("network", "tcp") not in ("tcp", "kcp")
+                or (
+                    inbound.get("network", "tcp") in ("tcp", "kcp")
+                    and inbound.get("tls") not in ("tls", "reality")
                 )
-                or
-                inbound.get('header_type') == 'http'
+                or inbound.get("header_type") == "http"
             ):
                 account.flow = XTLSFlows.NONE
 
@@ -118,16 +114,13 @@ def update_user(dbuser: "DBUser"):
             account = proxy_type.account_model(email=email, **proxy_settings)
 
             # XTLS currently only supports transmission methods of TCP and mKCP
-            if getattr(account, 'flow', None) and (
-                inbound.get('network', 'tcp') not in ('tcp', 'kcp')
-                or
-                (
-                    inbound.get('network', 'tcp') in ('tcp', 'kcp')
-                    and
-                    inbound.get('tls') not in ('tls', 'reality')
+            if getattr(account, "flow", None) and (
+                inbound.get("network", "tcp") not in ("tcp", "kcp")
+                or (
+                    inbound.get("network", "tcp") in ("tcp", "kcp")
+                    and inbound.get("tls") not in ("tls", "reality")
                 )
-                or
-                inbound.get('header_type') == 'http'
+                or inbound.get("header_type") == "http"
             ):
                 account.flow = XTLSFlows.NONE
 
@@ -163,17 +156,21 @@ def add_node(dbnode: "DBNode"):
     remove_node(dbnode.id)
 
     tls = get_tls()
-    xray.nodes[dbnode.id] = XRayNode(address=dbnode.address,
-                                     port=dbnode.port,
-                                     api_port=dbnode.api_port,
-                                     ssl_key=tls['key'],
-                                     ssl_cert=tls['certificate'],
-                                     usage_coefficient=dbnode.usage_coefficient)
+    xray.nodes[dbnode.id] = XRayNode(
+        address=dbnode.address,
+        port=dbnode.port,
+        api_port=dbnode.api_port,
+        ssl_key=tls["key"],
+        ssl_cert=tls["certificate"],
+        usage_coefficient=dbnode.usage_coefficient,
+    )
 
     return xray.nodes[dbnode.id]
 
 
-def _change_node_status(node_id: int, status: NodeStatus, message: str = None, version: str = None):
+def _change_node_status(
+    node_id: int, status: NodeStatus, message: str = None, version: str = None
+):
     with GetDB() as db:
         try:
             dbnode = crud.get_node_by_id(db, node_id)
@@ -216,31 +213,31 @@ def connect_node(node_id, config=None):
         _connecting_nodes[node_id] = True
 
         _change_node_status(node_id, NodeStatus.connecting)
-        logger.info(f"Connecting to \"{dbnode.name}\" node")
+        logger.info(f'Connecting to "{dbnode.name}" node')
 
         if config is None:
             config = xray.config.include_db_users()
 
-        for attempt in range(3):
+        for attempt in range(NODE_API_RETRIES):
             try:
                 node.start(config)
                 version = node.get_version()
                 _change_node_status(node_id, NodeStatus.connected, version=version)
                 logger.info(
-                    f"Connected to \"{dbnode.name}\" node, xray run on v{version}"
+                    f'Connected to "{dbnode.name}" node, xray run on v{version}'
                 )
                 break
             except Exception as e:
-                if attempt == 2:
+                if attempt == NODE_API_RETRIES - 1:
                     raise
                 logger.info(
                     f"Connection attempt {attempt + 1} failed: {e}. Retrying..."
                 )
-                time.sleep(2)
+                time.sleep(min(5, 2**attempt))
 
     except Exception as e:
         _change_node_status(node_id, NodeStatus.error, message=str(e))
-        logger.info(f"Unable to connect to \"{dbnode.name}\" node")
+        logger.info(f'Unable to connect to "{dbnode.name}" node')
 
     finally:
         try:
@@ -266,13 +263,13 @@ def restart_node(node_id, config=None):
         return connect_node(node_id, config)
 
     try:
-        logger.info(f"Restarting Xray core of \"{dbnode.name}\" node")
+        logger.info(f'Restarting Xray core of "{dbnode.name}" node')
 
         if config is None:
             config = xray.config.include_db_users()
 
         node.restart(config)
-        logger.info(f"Xray core of \"{dbnode.name}\" node restarted")
+        logger.info(f'Xray core of "{dbnode.name}" node restarted')
     except Exception as e:
         _change_node_status(node_id, NodeStatus.error, message=str(e))
         logger.info(f"Unable to restart node {node_id}")
