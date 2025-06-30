@@ -99,27 +99,20 @@ class ReSTXRayNode:
 
         return config
 
-    def make_request(self, path: str, timeout: int, retries: int = 3, **params):
-        last_exc = None
-        for attempt in range(retries):
-            try:
-                res = self.session.post(
-                    self._rest_api_url + path,
-                    timeout=timeout,
-                    json={"session_id": self._session_id, **params},
-                )
-                data = res.json()
+    def make_request(self, path: str, timeout: int, **params):
+        try:
+            res = self.session.post(self._rest_api_url + path, timeout=timeout,
+                                    json={"session_id": self._session_id, **params})
+            data = res.json()
+        except Exception as e:
+            exc = NodeAPIError(0, str(e))
+            raise exc
 
-                if res.status_code == 200:
-                    return data
-
-                last_exc = NodeAPIError(res.status_code, data.get("detail"))
-            except Exception as e:
-                last_exc = NodeAPIError(0, str(e))
-
-            time.sleep(1)
-
-        raise last_exc
+        if res.status_code == 200:
+            return data
+        else:
+            exc = NodeAPIError(res.status_code, data['detail'])
+            raise exc
 
     @property
     def connected(self):
