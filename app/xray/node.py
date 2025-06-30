@@ -99,7 +99,8 @@ class ReSTXRayNode:
 
         return config
 
-    def make_request(self, path: str, timeout: int, retries: int = 3, **params):
+    def make_request(self, path: str, timeout: int, retries: int = 5,
+                     backoff: float = 1.0, **params):
         last_exc = None
         for attempt in range(retries):
             try:
@@ -117,7 +118,7 @@ class ReSTXRayNode:
             except Exception as e:
                 last_exc = NodeAPIError(0, str(e))
 
-            time.sleep(1)
+            time.sleep(backoff * (attempt + 1))
 
         raise last_exc
 
@@ -154,16 +155,21 @@ class ReSTXRayNode:
 
         return self._api
 
-    def connect(self):
+    def connect(self, retries: int = 5, backoff: float = 1.0):
         self._node_cert = ssl.get_server_certificate((self.address, self.port))
         self._node_certfile = string_to_temp_file(self._node_cert)
         self.session.verify = self._node_certfile.name
 
-        res = self.make_request("/connect", timeout=3)
+        res = self.make_request(
+            "/connect",
+            timeout=5,
+            retries=retries,
+            backoff=backoff
+        )
         self._session_id = res['session_id']
 
     def disconnect(self):
-        self.make_request("/disconnect", timeout=3)
+        self.make_request("/disconnect", timeout=5)
         self._session_id = None
 
     def get_version(self):
@@ -178,7 +184,9 @@ class ReSTXRayNode:
         json_config = config.to_json()
 
         try:
-            res = self.make_request("/start", timeout=10, config=json_config)
+            res = self.make_request(
+                "/start", timeout=15, config=json_config
+            )
         except NodeAPIError as exc:
             if exc.detail == 'Xray is started already':
                 return self.restart(config)
@@ -205,7 +213,7 @@ class ReSTXRayNode:
         if not self.connected:
             self.connect()
 
-        self.make_request('/stop', timeout=5)
+        self.make_request('/stop', timeout=10)
         self._api = None
         self._started = False
 
@@ -216,7 +224,9 @@ class ReSTXRayNode:
         config = self._prepare_config(config)
         json_config = config.to_json()
 
-        res = self.make_request("/restart", timeout=10, config=json_config)
+        res = self.make_request(
+            "/restart", timeout=15, config=json_config
+        )
 
         self._started = True
 
@@ -336,29 +346,33 @@ class RPyCXRayNode:
         except AttributeError:
             pass
 
-    def connect(self):
+    def connect(self, retries: int = 5, backoff: float = 1.0):
         self.disconnect()
 
-        tries = 0
-        while True:
-            tries += 1
-            self._node_cert = ssl.get_server_certificate((self.address, self.port))
-            self._node_certfile = string_to_temp_file(self._node_cert)
-            conn = rpyc.ssl_connect(self.address,
-                                    self.port,
-                                    service=self._service,
-                                    keyfile=self._keyfile.name,
-                                    certfile=self._certfile.name,
-                                    ca_certs=self._node_certfile.name,
-                                    keepalive=True)
+        for attempt in range(retries):
             try:
+                self._node_cert = ssl.get_server_certificate((self.address, self.port))
+                self._node_certfile = string_to_temp_file(self._node_cert)
+                conn = rpyc.ssl_connect(
+                    self.address,
+                    self.port,
+                    service=self._service,
+                    keyfile=self._keyfile.name,
+                    certfile=self._certfile.name,
+                    ca_certs=self._node_certfile.name,
+                    keepalive=True,
+                )
                 conn.ping()
                 self.connection = conn
                 break
             except EOFError as exc:
-                if tries <= 3:
-                    continue
-                raise exc
+                if attempt == retries - 1:
+                    raise exc
+                time.sleep(backoff * (attempt + 1))
+            except Exception as exc:
+                if attempt == retries - 1:
+                    raise exc
+                time.sleep(backoff * (attempt + 1))
 
     @property
     def connected(self):

@@ -221,7 +221,7 @@ def connect_node(node_id, config=None):
         if config is None:
             config = xray.config.include_db_users()
 
-        for attempt in range(3):
+        for attempt in range(5):
             try:
                 node.start(config)
                 version = node.get_version()
@@ -231,12 +231,12 @@ def connect_node(node_id, config=None):
                 )
                 break
             except Exception as e:
-                if attempt == 2:
+                if attempt == 4:
                     raise
                 logger.info(
                     f"Connection attempt {attempt + 1} failed: {e}. Retrying..."
                 )
-                time.sleep(2)
+                time.sleep(2 ** attempt)
 
     except Exception as e:
         _change_node_status(node_id, NodeStatus.error, message=str(e))

@@ -389,6 +389,10 @@ For more information, You can read [Marzban CLI's documentation](./cli/README.md
 The Marzban project introduces the [Marzban-node](https://github.com/xmohammad1/marzban-node), which revolutionizes infrastructure distribution. With Marzban-node, you can distribute your infrastructure across multiple locations, unlocking benefits such as redundancy, high availability, scalability, flexibility. Marzban-node empowers users to connect to different servers, offering them the flexibility to choose and connect to multiple servers instead of being limited to only one server.
 For more detailed information and installation instructions, please refer to the [Marzban-node official documentation](https://github.com/xmohammad1/marzban-node)
 
+Marzban now retries node connections using exponential backoff, making REST and
+RPC node communication more resilient to high latency or resource exhaustion on
+the node server.
+
 # Webhook notifications
 
 You can set a webhook address and Marzban will send the notifications to that address.
