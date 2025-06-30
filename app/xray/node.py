@@ -119,14 +119,14 @@ class ReSTXRayNode:
         if not self._session_id:
             return False
         try:
-            self.make_request("/ping", timeout=3)
+            self.make_request("/ping", timeout=30)
             return True
         except NodeAPIError:
             return False
 
     @property
     def started(self):
-        res = self.make_request("/", timeout=3)
+        res = self.make_request("/", timeout=30)
         self._started = res.get('started', False)
         return self._started
 
@@ -153,15 +153,15 @@ class ReSTXRayNode:
         self._node_certfile = string_to_temp_file(self._node_cert)
         self.session.verify = self._node_certfile.name
 
-        res = self.make_request("/connect", timeout=3)
+        res = self.make_request("/connect", timeout=30)
         self._session_id = res['session_id']
 
     def disconnect(self):
-        self.make_request("/disconnect", timeout=3)
+        self.make_request("/disconnect", timeout=30)
         self._session_id = None
 
     def get_version(self):
-        res = self.make_request("/", timeout=3)
+        res = self.make_request("/", timeout=30)
         return res.get('core_version')
 
     def start(self, config: XRayConfig):
@@ -172,7 +172,7 @@ class ReSTXRayNode:
         json_config = config.to_json()
 
         try:
-            res = self.make_request("/start", timeout=10, config=json_config)
+            res = self.make_request("/start", timeout=60, config=json_config)
         except NodeAPIError as exc:
             if exc.detail == 'Xray is started already':
                 return self.restart(config)
@@ -189,7 +189,7 @@ class ReSTXRayNode:
         )
 
         try:
-            grpc.channel_ready_future(self._api._channel).result(timeout=5)
+            grpc.channel_ready_future(self._api._channel).result(timeout=35)
         except grpc.FutureTimeoutError:
             raise ConnectionError('Failed to connect to node\'s API')
 
@@ -199,7 +199,7 @@ class ReSTXRayNode:
         if not self.connected:
             self.connect()
 
-        self.make_request('/stop', timeout=5)
+        self.make_request('/stop', timeout=35)
         self._api = None
         self._started = False
 
@@ -210,7 +210,7 @@ class ReSTXRayNode:
         config = self._prepare_config(config)
         json_config = config.to_json()
 
-        res = self.make_request("/restart", timeout=10, config=json_config)
+        res = self.make_request("/restart", timeout=60, config=json_config)
 
         self._started = True
 
@@ -222,7 +222,7 @@ class ReSTXRayNode:
         )
 
         try:
-            grpc.channel_ready_future(self._api._channel).result(timeout=5)
+            grpc.channel_ready_future(self._api._channel).result(timeout=35)
         except grpc.FutureTimeoutError:
             raise ConnectionError('Failed to connect to node\'s API')
 
@@ -233,7 +233,7 @@ class ReSTXRayNode:
             try:
                 websocket_url = f"{self._logs_ws_url}?session_id={self._session_id}&interval=0.7"
                 self._ssl_context.load_verify_locations(self.session.verify)
-                ws = create_connection(websocket_url, sslopt={"context": self._ssl_context}, timeout=2)
+                ws = create_connection(websocket_url, sslopt={"context": self._ssl_context}, timeout=5)
                 while self._logs_queues:
                     try:
                         logs = ws.recv()
@@ -418,7 +418,7 @@ class RPyCXRayNode:
             ssl_target_name="Gozargah"
         )
         try:
-            grpc.channel_ready_future(self._api._channel).result(timeout=5)
+            grpc.channel_ready_future(self._api._channel).result(timeout=35)
         except grpc.FutureTimeoutError:
 
             start_time = time.time()
