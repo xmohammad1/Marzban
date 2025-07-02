@@ -8,6 +8,8 @@ from typing import Dict, List, Optional, Tuple, Union
 
 from sqlalchemy import and_, delete, func, or_
 from sqlalchemy.orm import Query, Session, joinedload
+
+from app.db.utils import commit_with_retry
 from sqlalchemy.sql.functions import coalesce
 
 from app.db.models import (
@@ -398,7 +400,7 @@ def create_user(db: Session, user: UserCreate, admin: Admin = None) -> User:
         ) if user.next_plan else None
     )
     db.add(dbuser)
-    db.commit()
+    commit_with_retry(db)
     db.refresh(dbuser)
     return dbuser
 
@@ -527,7 +529,7 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
 
     dbuser.edit_at = datetime.utcnow()
 
-    db.commit()
+    commit_with_retry(db)
     db.refresh(dbuser)
     return dbuser
 
@@ -559,7 +561,7 @@ def reset_user_data_usage(db: Session, dbuser: User) -> User:
         dbuser.next_plan = None
     db.add(dbuser)
 
-    db.commit()
+    commit_with_retry(db)
     db.refresh(dbuser)
     return dbuser
 
@@ -597,7 +599,7 @@ def reset_user_by_next(db: Session, dbuser: User) -> User:
     dbuser.next_plan = None
     db.add(dbuser)
 
-    db.commit()
+    commit_with_retry(db)
     db.refresh(dbuser)
     return dbuser
 
@@ -621,7 +623,7 @@ def revoke_user_sub(db: Session, dbuser: User) -> User:
         user.proxies[proxy_type] = settings
     dbuser = update_user(db, dbuser, user)
 
-    db.commit()
+    commit_with_retry(db)
     db.refresh(dbuser)
     return dbuser
 
@@ -641,7 +643,7 @@ def update_user_sub(db: Session, dbuser: User, user_agent: str) -> User:
     dbuser.sub_updated_at = datetime.utcnow()
     dbuser.sub_last_user_agent = user_agent
 
-    db.commit()
+    commit_with_retry(db)
     db.refresh(dbuser)
     return dbuser
 
