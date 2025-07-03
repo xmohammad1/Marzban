@@ -19,6 +19,9 @@ from app.models.user import (
 )
 from app.utils import report, responses
 
+# Maximum allowed timestamp for integer fields in database
+MAX_TIMESTAMP = 2 ** 31 - 1
+
 router = APIRouter(tags=["User"], prefix="/api", responses={401: responses._401})
 
 
@@ -53,6 +56,32 @@ def add_user(
                 status_code=400,
                 detail=f"Protocol {proxy_type} is disabled on your server",
             )
+
+    # Limit expiration related timestamps to avoid database overflow
+    if new_user.expire and new_user.expire > MAX_TIMESTAMP:
+        raise HTTPException(
+            status_code=400,
+            detail="expire timestamp is out of allowed range",
+        )
+
+    if (
+        new_user.on_hold_expire_duration
+        and int(datetime.utcnow().timestamp()) + new_user.on_hold_expire_duration > MAX_TIMESTAMP
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="on_hold_expire_duration results in an out of range expire",
+        )
+
+    if (
+        new_user.next_plan
+        and new_user.next_plan.expire
+        and new_user.next_plan.expire > MAX_TIMESTAMP
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="next_plan expire timestamp is out of allowed range",
+        )
 
     try:
         dbuser = crud.create_user(
