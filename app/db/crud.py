@@ -45,6 +45,15 @@ from app.models.user_template import UserTemplateCreate, UserTemplateModify
 from app.utils.helpers import calculate_expiration_days, calculate_usage_percent
 from config import NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT, USERS_AUTODELETE_DAYS
 
+INT32_MAX = 2 ** 31 - 1
+
+
+def _sanitize_timestamp(value: Optional[int]) -> Optional[int]:
+    """Return ``None`` when ``value`` is falsy or exceeds database limits."""
+    if not value:
+        return None
+    return value if value <= INT32_MAX else None
+
 
 def add_default_host(db: Session, inbound: ProxyInbound):
     """
@@ -383,7 +392,7 @@ def create_user(db: Session, user: UserCreate, admin: Admin = None) -> User:
         proxies=proxies,
         status=user.status,
         data_limit=(user.data_limit or None),
-        expire=(user.expire or None),
+        expire=_sanitize_timestamp(user.expire),
         admin=admin,
         data_limit_reset_strategy=user.data_limit_reset_strategy,
         note=user.note,
@@ -392,7 +401,7 @@ def create_user(db: Session, user: UserCreate, admin: Admin = None) -> User:
         auto_delete_in_days=user.auto_delete_in_days,
         next_plan=NextPlan(
             data_limit=user.next_plan.data_limit,
-            expire=user.next_plan.expire,
+            expire=_sanitize_timestamp(user.next_plan.expire),
             add_remaining_traffic=user.next_plan.add_remaining_traffic,
             fire_on_either=user.next_plan.fire_on_either,
         ) if user.next_plan else None
@@ -489,7 +498,7 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
                 dbuser.status = UserStatus.limited
 
     if modify.expire is not None:
-        dbuser.expire = (modify.expire or None)
+        dbuser.expire = _sanitize_timestamp(modify.expire)
         if dbuser.status in (UserStatus.active, UserStatus.expired):
             if not dbuser.expire or dbuser.expire > datetime.utcnow().timestamp():
                 dbuser.status = UserStatus.active
@@ -518,7 +527,7 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
     if modify.next_plan is not None:
         dbuser.next_plan = NextPlan(
             data_limit=modify.next_plan.data_limit,
-            expire=modify.next_plan.expire,
+            expire=_sanitize_timestamp(modify.next_plan.expire),
             add_remaining_traffic=modify.next_plan.add_remaining_traffic,
             fire_on_either=modify.next_plan.fire_on_either,
         )
@@ -590,7 +599,7 @@ def reset_user_by_next(db: Session, dbuser: User) -> User:
 
     dbuser.data_limit = dbuser.next_plan.data_limit + \
         (0 if dbuser.next_plan.add_remaining_traffic else dbuser.data_limit - dbuser.used_traffic)
-    dbuser.expire = dbuser.next_plan.expire
+    dbuser.expire = _sanitize_timestamp(dbuser.next_plan.expire)
 
     dbuser.used_traffic = 0
     db.delete(dbuser.next_plan)
@@ -853,8 +862,8 @@ def start_user_expire(db: Session, dbuser: User) -> User:
     Returns:
         User: The updated user object.
     """
-    expire = int(datetime.utcnow().timestamp()) + dbuser.on_hold_expire_duration
-    dbuser.expire = expire
+    expire_value = int(datetime.utcnow().timestamp()) + (dbuser.on_hold_expire_duration or 0)
+    dbuser.expire = _sanitize_timestamp(expire_value)
     dbuser.on_hold_expire_duration = None
     dbuser.on_hold_timeout = None
     db.commit()
