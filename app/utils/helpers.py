@@ -1,6 +1,16 @@
 import json
 from datetime import datetime as dt
+from typing import Optional
 from uuid import UUID
+
+# Maximum UNIX timestamp that fits into a signed 32 bit integer
+MAX_UNIX_TIMESTAMP = 2 ** 31 - 1
+
+def clamp_timestamp(value: Optional[int]) -> Optional[int]:
+    """Clamp timestamp value to MAX_UNIX_TIMESTAMP."""
+    if value is None:
+        return None
+    return min(int(value), MAX_UNIX_TIMESTAMP)
 
 
 def calculate_usage_percent(used_traffic: int, data_limit: int) -> float:
