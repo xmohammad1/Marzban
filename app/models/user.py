@@ -13,6 +13,9 @@ from app.subscription.share import generate_v2ray_links
 from app.utils.jwt import create_subscription_token
 from config import XRAY_SUBSCRIPTION_PATH, XRAY_SUBSCRIPTION_URL_PREFIX
 
+# Maximum timestamp that can be stored in INT columns (Year 2038 problem)
+MAX_TIMESTAMP = 2 ** 31 - 1
+
 USERNAME_REGEXP = re.compile(r"^(?=\w{3,32}\b)[a-zA-Z0-9-_@.]+(?:_[a-zA-Z0-9-_@.]+)*$")
 
 
@@ -54,6 +57,16 @@ class NextPlanModel(BaseModel):
     add_remaining_traffic: bool = False
     fire_on_either: bool = True
     model_config = ConfigDict(from_attributes=True)
+
+    @field_validator("expire", mode="before")
+    def validate_expire(cls, v):
+        if v in (None, 0):
+            return v
+        if int(v) < 0:
+            raise ValueError("expire must be a positive integer")
+        if int(v) > MAX_TIMESTAMP:
+            raise ValueError("expire value is too large")
+        return int(v)
 
 
 class User(BaseModel):
@@ -119,6 +132,26 @@ class User(BaseModel):
         if (v in (0, None)):
             return None
         return v
+
+    @field_validator("expire", mode="before")
+    def validate_expire(cls, v):
+        if v in (None, 0):
+            return v
+        if int(v) < 0:
+            raise ValueError("expire must be a positive integer")
+        if int(v) > MAX_TIMESTAMP:
+            raise ValueError("expire value is too large")
+        return int(v)
+
+    @field_validator("on_hold_expire_duration", mode="before")
+    def validate_on_hold_expire_duration(cls, v):
+        if v in (None, 0):
+            return None
+        if int(v) < 0:
+            raise ValueError("on_hold_expire_duration must be a positive integer")
+        if int(datetime.utcnow().timestamp()) + int(v) > MAX_TIMESTAMP:
+            raise ValueError("on_hold_expire_duration is too large")
+        return int(v)
 
 
 class UserCreate(User):
