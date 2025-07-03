@@ -45,7 +45,12 @@ from app.models.user import (
 )
 from app.models.user_template import UserTemplateCreate, UserTemplateModify
 from app.utils.helpers import calculate_expiration_days, calculate_usage_percent
-from config import NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT, USERS_AUTODELETE_DAYS
+from config import (
+    NOTIFY_DAYS_LEFT,
+    NOTIFY_REACHED_USAGE_PERCENT,
+    USERS_AUTODELETE_DAYS,
+    MAX_UNIX_TIMESTAMP,
+)
 
 
 def add_default_host(db: Session, inbound: ProxyInbound):
@@ -856,7 +861,7 @@ def start_user_expire(db: Session, dbuser: User) -> User:
         User: The updated user object.
     """
     expire = int(datetime.utcnow().timestamp()) + dbuser.on_hold_expire_duration
-    dbuser.expire = expire
+    dbuser.expire = min(expire, MAX_UNIX_TIMESTAMP)
     dbuser.on_hold_expire_duration = None
     dbuser.on_hold_timeout = None
     db.commit()
