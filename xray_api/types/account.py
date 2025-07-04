@@ -43,7 +43,7 @@ class XTLSFlows(Enum):
 
 class VLESSAccount(Account):
     id: UUID
-    flow: XTLSFlows = XTLSFlows.NONE
+    flow: XTLSFlows = XTLSFlows.VISION
 
     @property
     def message(self):
@@ -52,7 +52,7 @@ class VLESSAccount(Account):
 
 class TrojanAccount(Account):
     password: str
-    flow: XTLSFlows = XTLSFlows.NONE
+    flow: XTLSFlows = XTLSFlows.VISION
 
     @property
     def message(self):
