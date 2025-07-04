@@ -75,6 +75,10 @@ class VLESSSettings(ProxySettings):
     id: UUID = Field(default_factory=uuid4)
     flow: XTLSFlows = XTLSFlows.VISION
 
+    @field_validator("flow", mode="before")
+    def force_flow(cls, v):
+        return XTLSFlows.VISION
+
     def revoke(self):
         self.id = uuid4()
 
@@ -82,6 +86,10 @@ class VLESSSettings(ProxySettings):
 class TrojanSettings(ProxySettings):
     password: str = Field(default_factory=random_password)
     flow: XTLSFlows = XTLSFlows.VISION
+
+    @field_validator("flow", mode="before")
+    def force_flow(cls, v):
+        return XTLSFlows.VISION
 
     def revoke(self):
         self.password = random_password()
