@@ -82,7 +82,7 @@ def add_user(dbuser: "DBUser"):
                 or
                 inbound.get('header_type') == 'http'
             ):
-                account.flow = XTLSFlows.NONE
+                account.flow = XTLSFlows.VISION
 
             _add_user_to_inbound(xray.api, inbound_tag, account)  # main core
             for node in list(xray.nodes.values()):
@@ -134,7 +134,7 @@ def update_user(dbuser: "DBUser"):
                 or
                 inbound.get('header_type') == 'http'
             ):
-                account.flow = XTLSFlows.NONE
+                account.flow = XTLSFlows.VISION
 
             _alter_inbound_user(xray.api, inbound_tag, account)  # main core
             for node in list(xray.nodes.values()):
