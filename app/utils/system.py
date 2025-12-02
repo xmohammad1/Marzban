@@ -57,8 +57,8 @@ rt_bw = RealtimeBandwidth(
     incoming_bytes=0, outgoing_bytes=0, incoming_packets=0, outgoing_packets=0)
 
 
-# sample time is 2 seconds, values lower than this may not produce good results
-@scheduler.scheduled_job("interval", seconds=2, coalesce=True, max_instances=1)
+# sample time is 12 seconds, values lower than this may not produce good results
+@scheduler.scheduled_job("interval", seconds=12, coalesce=True, max_instances=1)
 def record_realtime_bandwidth() -> None:
     global rt_bw
     last_perf_counter = rt_bw.last_perf_counter
