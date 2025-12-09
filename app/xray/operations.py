@@ -32,7 +32,7 @@ def get_tls():
 def _add_user_to_inbound(api: XRayAPI, inbound_tag: str, account: Account):
     try:
         api.add_inbound_user(tag=inbound_tag, user=account, timeout=600)
-    except (xray.exc.EmailNotFoundError, xray.exc.ConnectionError, xray.exc.UnknownError, xray.exc.TimeoutError):
+    except (xray.exc.EmailExistsError, xray.exc.ConnectionError, xray.exc.UnknownError, xray.exc.TimeoutError):
         pass
 
 
