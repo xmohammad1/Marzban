@@ -40,7 +40,7 @@ def _add_user_to_inbound(api: XRayAPI, inbound_tag: str, account: Account):
 def _remove_user_from_inbound(api: XRayAPI, inbound_tag: str, email: str):
     try:
         api.remove_inbound_user(tag=inbound_tag, email=email, timeout=600)
-    except (xray.exc.EmailNotFoundError, xray.exc.ConnectionError):
+    except (xray.exc.EmailNotFoundError, xray.exc.ConnectionError, xray.exc.UnknownError):
         pass
 
 
@@ -48,7 +48,7 @@ def _remove_user_from_inbound(api: XRayAPI, inbound_tag: str, email: str):
 def _alter_inbound_user(api: XRayAPI, inbound_tag: str, account: Account):
     try:
         api.remove_inbound_user(tag=inbound_tag, email=account.email, timeout=600)
-    except (xray.exc.EmailNotFoundError, xray.exc.ConnectionError):
+    except (xray.exc.EmailNotFoundError, xray.exc.ConnectionError, xray.exc.UnknownError):
         pass
     try:
         api.add_inbound_user(tag=inbound_tag, user=account, timeout=600)
