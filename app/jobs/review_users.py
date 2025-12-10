@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy.orm import Session
-from sqlalchemy.orm.exc import ObjectDeletedError
 
 from app import logger, scheduler, xray
 from app.db import (GetDB, get_notification_reminder, get_users,
@@ -57,12 +56,9 @@ def review():
     now_ts = now.timestamp()
     with GetDB() as db:
         for user in get_users(db, status=UserStatus.active):
-            try:
-                limited = user.data_limit and user.used_traffic >= user.data_limit
-                expired = user.expire and user.expire <= now_ts
-            except ObjectDeletedError:
-                logger.warning("Skipping review for user removed during iteration")
-                continue
+
+            limited = user.data_limit and user.used_traffic >= user.data_limit
+            expired = user.expire and user.expire <= now_ts
 
             if (limited or expired) and user.next_plan is not None:
                 if user.next_plan is not None:
