@@ -853,8 +853,9 @@ def start_user_expire(db: Session, dbuser: User) -> User:
     Returns:
         User: The updated user object.
     """
+    mysql_int_max = 2147483647
     expire = int(datetime.utcnow().timestamp()) + dbuser.on_hold_expire_duration
-    dbuser.expire = expire
+    dbuser.expire = min(expire, mysql_int_max)
     dbuser.on_hold_expire_duration = None
     dbuser.on_hold_timeout = None
     db.commit()
