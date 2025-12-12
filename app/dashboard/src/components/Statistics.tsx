@@ -1,7 +1,10 @@
 import { Box, BoxProps, Card, chakra, HStack, Text } from "@chakra-ui/react";
-import { ChartBarIcon, UsersIcon } from "@heroicons/react/24/outline";
+import {
+  ChartBarIcon,
+  ChartPieIcon,
+  UsersIcon,
+} from "@heroicons/react/24/outline";
 import { useDashboard } from "contexts/DashboardContext";
-import useGetUser from "hooks/useGetUser";
 import { FC, PropsWithChildren, ReactElement, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "react-query";
@@ -18,6 +21,15 @@ const TotalUsersIcon = chakra(UsersIcon, {
 });
 
 const NetworkIcon = chakra(ChartBarIcon, {
+  baseStyle: {
+    w: 5,
+    h: 5,
+    position: "relative",
+    zIndex: "2",
+  },
+});
+
+const MemoryIcon = chakra(ChartPieIcon, {
   baseStyle: {
     w: 5,
     h: 5,
@@ -107,11 +119,10 @@ const StatisticCard: FC<PropsWithChildren<StatisticCardProps>> = ({
 export const StatisticsQueryKey = "statistics-query-key";
 export const Statistics: FC<BoxProps> = (props) => {
   const { version } = useDashboard();
-  const { userData } = useGetUser();
   const { data: systemData } = useQuery({
     queryKey: StatisticsQueryKey,
     queryFn: () => fetch("/system"),
-    refetchInterval: 600_000,
+    refetchInterval: 5000,
     onSuccess: ({ version: currentVersion }) => {
       if (version !== currentVersion)
         useDashboard.setState({ version: currentVersion });
@@ -149,9 +160,35 @@ export const Statistics: FC<BoxProps> = (props) => {
         icon={<TotalUsersIcon />}
       />
       <StatisticCard
-        title={t("UsersUsage")}
-        content={formatBytes(userData.users_usage ?? 0)}
+        title={t("dataUsage")}
+        content={
+          systemData &&
+          formatBytes(
+            systemData.incoming_bandwidth + systemData.outgoing_bandwidth
+          )
+        }
         icon={<NetworkIcon />}
+      />
+      <StatisticCard
+        title={t("memoryUsage")}
+        content={
+          systemData && (
+            <HStack alignItems="flex-end">
+              <Text>{formatBytes(systemData.mem_used, 1, true)[0]}</Text>
+              <Text
+                fontWeight="normal"
+                fontSize="lg"
+                as="span"
+                display="inline-block"
+                pb="5px"
+              >
+                {formatBytes(systemData.mem_used, 1, true)[1]} /{" "}
+                {formatBytes(systemData.mem_total, 1)}
+              </Text>
+            </HStack>
+          )
+        }
+        icon={<MemoryIcon />}
       />
     </HStack>
   );

@@ -31,28 +31,48 @@ def get_tls():
 @threaded_function
 def _add_user_to_inbound(api: XRayAPI, inbound_tag: str, account: Account):
     try:
-        api.add_inbound_user(tag=inbound_tag, user=account, timeout=600)
-    except (xray.exc.EmailExistsError, xray.exc.ConnectionError, xray.exc.UnknownError, xray.exc.TimeoutError):
+        api.add_inbound_user(tag=inbound_tag, user=account, timeout=30)
+    except (
+        xray.exc.EmailExistsError,
+        xray.exc.ConnectionError,
+        xray.exc.TagNotFoundError,
+        xray.exc.TimeoutError,
+    ):
         pass
 
 
 @threaded_function
 def _remove_user_from_inbound(api: XRayAPI, inbound_tag: str, email: str):
     try:
-        api.remove_inbound_user(tag=inbound_tag, email=email, timeout=600)
-    except (xray.exc.EmailNotFoundError, xray.exc.ConnectionError, xray.exc.UnknownError, xray.exc.TimeoutError):
+        api.remove_inbound_user(tag=inbound_tag, email=email, timeout=30)
+    except (
+        xray.exc.EmailNotFoundError,
+        xray.exc.ConnectionError,
+        xray.exc.TagNotFoundError,
+        xray.exc.TimeoutError,
+    ):
         pass
 
 
 @threaded_function
 def _alter_inbound_user(api: XRayAPI, inbound_tag: str, account: Account):
     try:
-        api.remove_inbound_user(tag=inbound_tag, email=account.email, timeout=600)
-    except (xray.exc.EmailNotFoundError, xray.exc.ConnectionError, xray.exc.UnknownError, xray.exc.TimeoutError):
+        api.remove_inbound_user(tag=inbound_tag, email=account.email, timeout=30)
+    except (
+        xray.exc.EmailNotFoundError,
+        xray.exc.ConnectionError,
+        xray.exc.TagNotFoundError,
+        xray.exc.TimeoutError,
+    ):
         pass
     try:
-        api.add_inbound_user(tag=inbound_tag, user=account, timeout=600)
-    except (xray.exc.EmailExistsError, xray.exc.ConnectionError, xray.exc.UnknownError, xray.exc.TimeoutError):
+        api.add_inbound_user(tag=inbound_tag, user=account, timeout=30)
+    except (
+        xray.exc.EmailExistsError,
+        xray.exc.ConnectionError,
+        xray.exc.TagNotFoundError,
+        xray.exc.TimeoutError,
+    ):
         pass
 
 
@@ -72,10 +92,10 @@ def add_user(dbuser: "DBUser"):
 
             # XTLS currently only supports transmission methods of TCP and mKCP
             if getattr(account, 'flow', None) and (
-                inbound.get('network', 'tcp') not in ('tcp', 'kcp')
+                inbound.get('network', 'tcp') not in ('tcp', 'raw', 'kcp')
                 or
                 (
-                    inbound.get('network', 'tcp') in ('tcp', 'kcp')
+                    inbound.get('network', 'tcp') in ('tcp', 'raw', 'kcp')
                     and
                     inbound.get('tls') not in ('tls', 'reality')
                 )
