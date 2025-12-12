@@ -9,7 +9,7 @@ from app.models.proxy import ProxyHost, ProxyInbound, ProxyTypes
 from app.models.system import SystemStats
 from app.models.user import UserStatus
 from app.utils import responses
-from app.utils.system import cpu_usage, realtime_bandwidth
+from app.utils.system import cpu_usage, memory_usage, realtime_bandwidth
 
 router = APIRouter(tags=["System"], prefix="/api", responses={401: responses._401})
 
@@ -18,7 +18,8 @@ router = APIRouter(tags=["System"], prefix="/api", responses={401: responses._40
 def get_system_stats(
     db: Session = Depends(get_db), admin: Admin = Depends(Admin.get_current)
 ):
-    """Fetch system stats including CPU and user metrics."""
+    """Fetch system stats including memory, CPU, and user metrics."""
+    mem = memory_usage()
     cpu = cpu_usage()
     system = crud.get_system_usage(db)
     dbadmin: Union[Admin, None] = crud.get_admin(db, admin.username)
@@ -44,6 +45,8 @@ def get_system_stats(
 
     return SystemStats(
         version=__version__,
+        mem_total=mem.total,
+        mem_used=mem.used,
         cpu_cores=cpu.cores,
         cpu_usage=cpu.percent,
         total_user=total_user,

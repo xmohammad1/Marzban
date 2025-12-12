@@ -95,6 +95,7 @@
   "login.fieldRequired": "این فیلد باید پر شود!",
   "login.loginYourAccount": "وارد حساب خود شوید",
   "login.welcomeBack": "خوش آمدید, لطفا اطلاعات خود را وارد کنید",
+  "memoryUsage": "مصرف حافظه",
   "next": "بعدی",
   "nodes.addHostForEveryInbound": "استفاده از این گره به عنوان میزبان تمام ورودی‌ها",
   "nodes.addNewMarzbanNode": "افزودن گره مرزبان",

@@ -12,6 +12,13 @@ from app import scheduler
 
 
 @dataclass
+class MemoryStat():
+    total: int
+    used: int
+    free: int
+
+
+@dataclass
 class CPUStat():
     cores: int
     percent: float
@@ -19,6 +26,12 @@ class CPUStat():
 
 def cpu_usage() -> CPUStat:
     return CPUStat(cores=psutil.cpu_count(), percent=psutil.cpu_percent())
+
+
+def memory_usage() -> MemoryStat:
+    mem = psutil.virtual_memory()
+    return MemoryStat(total=mem.total, used=mem.used, free=mem.available)
+
 
 @dataclass
 class RealtimeBandwidth:
@@ -57,8 +70,8 @@ rt_bw = RealtimeBandwidth(
     incoming_bytes=0, outgoing_bytes=0, incoming_packets=0, outgoing_packets=0)
 
 
-# sample time is 12 seconds, values lower than this may not produce good results
-@scheduler.scheduled_job("interval", seconds=12, coalesce=True, max_instances=1)
+# sample time is 2 seconds, values lower than this may not produce good results
+@scheduler.scheduled_job("interval", seconds=2, coalesce=True, max_instances=1)
 def record_realtime_bandwidth() -> None:
     global rt_bw
     last_perf_counter = rt_bw.last_perf_counter
