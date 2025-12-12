@@ -61,7 +61,8 @@ def review():
                 limited = user.data_limit and user.used_traffic >= user.data_limit
                 expired = user.expire and user.expire <= now_ts
             except ObjectDeletedError:
-                logger.warning("User \"%s\" was deleted during review (active loop)", getattr(user, "username", "<unknown>"))
+                username = user.__dict__.get("username", "<unknown>")
+                logger.warning("User \"%s\" was deleted during review (active loop)", username)
                 continue
 
             if (limited or expired) and user.next_plan is not None:
@@ -110,7 +111,8 @@ def review():
                 else:
                     continue
             except ObjectDeletedError:
-                logger.warning("User \"%s\" was deleted during review (on_hold loop)", getattr(user, "username", "<unknown>"))
+                username = user.__dict__.get("username", "<unknown>")
+                logger.warning("User \"%s\" was deleted during review (on_hold loop)", username)
                 continue
 
             update_user_status(db, user, status)
