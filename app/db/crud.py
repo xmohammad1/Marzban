@@ -46,6 +46,18 @@ from app.utils.helpers import calculate_expiration_days, calculate_usage_percent
 from config import NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT, USERS_AUTODELETE_DAYS
 
 
+INT32_MAX_TIMESTAMP = 2147483647
+
+
+def clamp_expire_timestamp(expire: Optional[int]) -> Optional[int]:
+    """Keep expire values within the database Integer range."""
+
+    if expire is None:
+        return None
+
+    return min(expire, INT32_MAX_TIMESTAMP)
+
+
 def add_default_host(db: Session, inbound: ProxyInbound):
     """
     Adds a default host to a proxy inbound.
@@ -489,7 +501,7 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
                 dbuser.status = UserStatus.limited
 
     if modify.expire is not None:
-        dbuser.expire = (modify.expire or None)
+        dbuser.expire = clamp_expire_timestamp(modify.expire or None)
         if dbuser.status in [UserStatus.active, UserStatus.expired]:
             if not dbuser.expire or dbuser.expire > datetime.utcnow().timestamp():
                 dbuser.status = UserStatus.active
@@ -590,7 +602,8 @@ def reset_user_by_next(db: Session, dbuser: User) -> User:
 
     dbuser.data_limit = dbuser.next_plan.data_limit + \
         (0 if dbuser.next_plan.add_remaining_traffic else dbuser.data_limit - dbuser.used_traffic)
-    dbuser.expire = int((timedelta(seconds=dbuser.next_plan.expire) + datetime.utcnow()).timestamp())
+    expire = int((timedelta(seconds=dbuser.next_plan.expire) + datetime.utcnow()).timestamp())
+    dbuser.expire = clamp_expire_timestamp(expire)
 
     dbuser.used_traffic = 0
     db.delete(dbuser.next_plan)
@@ -854,7 +867,7 @@ def start_user_expire(db: Session, dbuser: User) -> User:
         User: The updated user object.
     """
     expire = int(datetime.utcnow().timestamp()) + dbuser.on_hold_expire_duration
-    dbuser.expire = expire
+    dbuser.expire = clamp_expire_timestamp(expire)
     dbuser.on_hold_expire_duration = None
     dbuser.on_hold_timeout = None
     db.commit()
