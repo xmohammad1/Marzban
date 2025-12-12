@@ -1,8 +1,8 @@
 <p align="center">
-  <a href="https://github.com/gozargah/marzban" target="_blank" rel="noopener noreferrer">
+  <a href="https://github.com/xmohammad1/marzban" target="_blank" rel="noopener noreferrer">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/Gozargah/Marzban-docs/raw/master/screenshots/logo-dark.png">
-      <img width="160" height="160" src="https://github.com/Gozargah/Marzban-docs/raw/master/screenshots/logo-light.png">
+      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/xmohammad1/Marzban-docs/raw/master/screenshots/logo-dark.png">
+      <img width="160" height="160" src="https://github.com/xmohammad1/Marzban-docs/raw/master/screenshots/logo-light.png">
     </picture>
   </a>
 </p>
@@ -16,22 +16,22 @@
 <br/>
 <p align="center">
     <a href="#">
-        <img src="https://img.shields.io/github/actions/workflow/status/gozargah/marzban/build.yml?style=flat-square" />
+        <img src="https://img.shields.io/github/actions/workflow/status/xmohammad1/marzban/build.yml?style=flat-square" />
     </a>
-    <a href="https://hub.docker.com/r/gozargah/marzban" target="_blank">
-        <img src="https://img.shields.io/docker/pulls/gozargah/marzban?style=flat-square&logo=docker" />
+    <a href="https://hub.docker.com/r/xmohammad1/marzban" target="_blank">
+        <img src="https://img.shields.io/docker/pulls/xmohammad1/marzban?style=flat-square&logo=docker" />
     </a>
     <a href="#">
-        <img src="https://img.shields.io/github/license/gozargah/marzban?style=flat-square" />
+        <img src="https://img.shields.io/github/license/xmohammad1/marzban?style=flat-square" />
     </a>
-    <a href="https://t.me/gozargah_marzban" target="_blank">
+    <a href="https://t.me/xmohammad1_marzban" target="_blank">
         <img src="https://img.shields.io/badge/telegram-group-blue?style=flat-square&logo=telegram" />
     </a>
     <a href="#">
         <img src="https://img.shields.io/badge/twitter-commiunity-blue?style=flat-square&logo=twitter" />
     </a>
     <a href="#">
-        <img src="https://img.shields.io/github/stars/gozargah/marzban?style=social" />
+        <img src="https://img.shields.io/github/stars/xmohammad1/marzban?style=social" />
     </a>
 </p>
 
@@ -54,8 +54,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/gozargah/marzban" target="_blank" rel="noopener noreferrer" >
-    <img src="https://github.com/Gozargah/Marzban-docs/raw/master/screenshots/preview.png" alt="Marzban screenshots" width="600" height="auto">
+  <a href="https://github.com/xmohammad1/marzban" target="_blank" rel="noopener noreferrer" >
+    <img src="https://github.com/xmohammad1/Marzban-docs/raw/master/screenshots/preview.png" alt="Marzban screenshots" width="600" height="auto">
   </a>
 </p>
 
@@ -111,19 +111,18 @@ Marzban is user-friendly, feature-rich and reliable. It lets you to create diffe
 Run the following command to install Marzban with SQLite database:
 
 ```bash
-sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install
+sudo bash -c "$(curl -sL https://github.com/xmohammad1/Marzban-scripts/raw/master/marzban.sh)" @ install
 ```
 
 Run the following command to install Marzban with MySQL database:
 
 ```bash
-sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install --database mysql
+sudo bash -c "$(curl -sL https://github.com/xmohammad1/Marzban-scripts/raw/master/marzban.sh)" @ install --database mysql
 ```
 
 Run the following command to install Marzban with MariaDB database:
-
 ```bash
-sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install --database mariadb
+sudo bash -c "$(curl -sL https://github.com/xmohammad1/Marzban-scripts/raw/master/marzban.sh)" @ install --database mariadb
 ```
 
 Once the installation is complete:
@@ -132,7 +131,7 @@ Once the installation is complete:
 - The Marzban files will be located at `/opt/marzban`
 - The configuration file can be found at `/opt/marzban/.env` (refer to [configurations](#configuration) section to see variables)
 - The data files will be placed at `/var/lib/marzban`
-- For security reasons, the Marzban dashboard is not accessible via IP address. Therefore, you must [obtain SSL certificate](https://gozargah.github.io/marzban/en/examples/issue-ssl-certificate) and access your Marzban dashboard by opening a web browser and navigating to `https://YOUR_DOMAIN:8000/dashboard/` (replace YOUR_DOMAIN with your actual domain)
+- For security reasons, the Marzban dashboard is not accessible via IP address. Therefore, you must [obtain SSL certificate](https://xmohammad1.github.io/marzban/en/examples/issue-ssl-certificate) and access your Marzban dashboard by opening a web browser and navigating to `https://YOUR_DOMAIN:8000/dashboard/` (replace YOUR_DOMAIN with your actual domain)
 - You can also use SSH port forwarding to access the Marzban dashboard locally without a domain. Replace `user@serverip` with your actual SSH username and server IP and Run the command below:
 
 ```bash
@@ -160,7 +159,6 @@ marzban --help
 ```
 
 If you are eager to run the project using the source code, check the section below
-
 <details markdown="1">
 <summary><h3>Manual install (advanced)</h3></summary>
 
@@ -172,10 +170,10 @@ You can install it using [Xray-install](https://github.com/XTLS/Xray-install)
 bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
 ```
 
-Clone this project and install the dependencies (you need Python >= 3.12.7)
+Clone this project and install the dependencies (you need Python >= 3.8)
 
 ```bash
-git clone https://github.com/Gozargah/Marzban.git
+git clone https://github.com/xmohammad1/Marzban.git
 cd Marzban
 wget -qO- https://bootstrap.pypa.io/get-pip.py | python3 -
 python3 -m pip install -r requirements.txt
@@ -282,7 +280,6 @@ server {
 ```
 
 By default the app will be run on `http://localhost:8000/dashboard`. You can configure it using changing the `UVICORN_HOST` and `UVICORN_PORT` environment variables.
-
 </details>
 
 # Configuration
@@ -290,7 +287,7 @@ By default the app will be run on `http://localhost:8000/dashboard`. You can con
 > You can set settings below using environment variables or placing them in `.env` file.
 
 | Variable                                 | Description                                                                                                              |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| ---------------------------------------- |--------------------------------------------------------------------------------------------------------------------------|
 | SUDO_USERNAME                            | Superuser's username                                                                                                     |
 | SUDO_PASSWORD                            | Superuser's password                                                                                                     |
 | SQLALCHEMY_DATABASE_URL                  | Database URL ([SQLAlchemy's docs](https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls))                    |
@@ -310,7 +307,7 @@ By default the app will be run on `http://localhost:8000/dashboard`. You can con
 | CLASH_SUBSCRIPTION_TEMPLATE              | The template that will be used for generating clash configs (default: `clash/default.yml`)                               |
 | SUBSCRIPTION_PAGE_TEMPLATE               | The template used for generating subscription info page (default: `subscription/index.html`)                             |
 | HOME_PAGE_TEMPLATE                       | Decoy page template (default: `home/index.html`)                                                                         |
-| TELEGRAM_API_TOKEN                       | Telegram bot API token (get token from [@botfather](https://t.me/botfather))                                             |
+| TELEGRAM_API_TOKEN                       | Telegram bot API token  (get token from [@botfather](https://t.me/botfather))                                            |
 | TELEGRAM_ADMIN_ID                        | Numeric Telegram ID of admin (use [@userinfobot](https://t.me/userinfobot) to found your ID)                             |
 | TELEGRAM_PROXY_URL                       | Run Telegram Bot over proxy                                                                                              |
 | JWT_ACCESS_TOKEN_EXPIRE_MINUTES          | Expire time for the Access Tokens in minutes, `0` considered as infinite (default: `1440`)                               |
@@ -329,13 +326,16 @@ By default the app will be run on `http://localhost:8000/dashboard`. You can con
 | USE_CUSTOM_JSON_FOR_STREISAND            | Enable custom JSON config only for Streisand (default: `False`)                                                          |
 | USE_CUSTOM_JSON_FOR_V2RAYN               | Enable custom JSON config only for V2rayN (default: `False`)                                                             |
 
+
 # Documentation
 
-The [Marzban Documentation](https://gozargah.github.io/marzban) provides all the essential guides to get you started, available in three languages: Farsi, English, and Russian. This documentation requires significant effort to cover all aspects of the project comprehensively. We welcome and appreciate your contributions to help us improve it. You can contribute on this [GitHub repository](https://github.com/Gozargah/gozargah.github.io).
+The [Marzban Documentation](https://xmohammad1.github.io/marzban) provides all the essential guides to get you started, available in three languages: Farsi, English, and Russian. This documentation requires significant effort to cover all aspects of the project comprehensively. We welcome and appreciate your contributions to help us improve it. You can contribute on this [GitHub repository](https://github.com/xmohammad1/xmohammad1.github.io).
+
 
 # API
 
 Marzban provides a REST API that enables developers to interact with Marzban services programmatically. To view the API documentation in Swagger UI or ReDoc, set the configuration variable `DOCS=True` and navigate to the `/docs` and `/redoc`.
+
 
 # Backup
 
@@ -347,19 +347,16 @@ It's always a good idea to backup your Marzban files regularly to prevent data l
 Marzban's backup service efficiently zips all necessary files and sends them to your specified Telegram bot. It supports SQLite, MySQL, and MariaDB databases. One of its key features is automation, allowing you to schedule backups every hour. There are no limitations concerning Telegram's upload limits for bots; if a file exceeds the limit, it will be split and sent in multiple parts. Additionally, you can initiate an immediate backup at any time.
 
 Install the Latest Version of Marzban Command:
-
 ```bash
-sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install-script
+sudo bash -c "$(curl -sL https://github.com/xmohammad1/Marzban-scripts/raw/master/marzban.sh)" @ install-script
 ```
 
 Setup the Backup Service:
-
 ```bash
 marzban backup-service
 ```
 
 Get an Immediate Backup:
-
 ```bash
 marzban backup
 ```
@@ -389,8 +386,8 @@ For more information, You can read [Marzban CLI's documentation](./cli/README.md
 
 # Marzban Node
 
-The Marzban project introduces the [Marzban-node](https://github.com/gozargah/marzban-node), which revolutionizes infrastructure distribution. With Marzban-node, you can distribute your infrastructure across multiple locations, unlocking benefits such as redundancy, high availability, scalability, flexibility. Marzban-node empowers users to connect to different servers, offering them the flexibility to choose and connect to multiple servers instead of being limited to only one server.
-For more detailed information and installation instructions, please refer to the [Marzban-node official documentation](https://github.com/gozargah/marzban-node)
+The Marzban project introduces the [Marzban-node](https://github.com/xmohammad1/marzban-node), which revolutionizes infrastructure distribution. With Marzban-node, you can distribute your infrastructure across multiple locations, unlocking benefits such as redundancy, high availability, scalability, flexibility. Marzban-node empowers users to connect to different servers, offering them the flexibility to choose and connect to multiple servers instead of being limited to only one server.
+For more detailed information and installation instructions, please refer to the [Marzban-node official documentation](https://github.com/xmohammad1/marzban-node)
 
 # Webhook notifications
 
@@ -437,16 +434,16 @@ Made in [Unknown!] and Published under [AGPL-3.0](./LICENSE).
 
 # Contributors
 
-We ❤️‍🔥 contributors! If you'd like to contribute, please check out our [Contributing Guidelines](CONTRIBUTING.md) and feel free to submit a pull request or open an issue. We also welcome you to join our [Telegram](https://t.me/gozargah_marzban) group for either support or contributing guidance.
+We ❤️‍🔥 contributors! If you'd like to contribute, please check out our [Contributing Guidelines](CONTRIBUTING.md) and feel free to submit a pull request or open an issue. We also welcome you to join our [Telegram](https://t.me/xmohammad1_marzban) group for either support or contributing guidance.
 
-Check [open issues](https://github.com/gozargah/marzban/issues) to help the progress of this project.
+Check [open issues](https://github.com/xmohammad1/marzban/issues) to help the progress of this project.
 
 <p align="center">
 Thanks to the all contributors who have helped improve Marzban:
 </p>
 <p align="center">
-<a href="https://github.com/Gozargah/Marzban/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Gozargah/Marzban" />
+<a href="https://github.com/xmohammad1/Marzban/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=xmohammad1/Marzban" />
 </a>
 </p>
 <p align="center">
