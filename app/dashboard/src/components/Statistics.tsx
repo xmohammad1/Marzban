@@ -122,7 +122,7 @@ export const Statistics: FC<BoxProps> = (props) => {
   const { data: systemData } = useQuery({
     queryKey: StatisticsQueryKey,
     queryFn: () => fetch("/system"),
-    refetchInterval: 5000,
+    refetchInterval: 600000,
     onSuccess: ({ version: currentVersion }) => {
       if (version !== currentVersion)
         useDashboard.setState({ version: currentVersion });
@@ -163,8 +163,23 @@ export const Statistics: FC<BoxProps> = (props) => {
         title={t("dataUsage")}
         content={
           systemData &&
-          formatBytes(
-            systemData.incoming_bandwidth + systemData.outgoing_bandwidth
+          systemData.admin_usage !== undefined && (
+            <HStack alignItems="flex-end">
+              <Text>
+                {(
+                  systemData.admin_usage / Math.pow(1024, 3)
+                ).toFixed(2)}
+              </Text>
+              <Text
+                fontWeight="normal"
+                fontSize="lg"
+                as="span"
+                display="inline-block"
+                pb="5px"
+              >
+                GB
+              </Text>
+            </HStack>
           )
         }
         icon={<NetworkIcon />}
