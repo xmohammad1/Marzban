@@ -14,6 +14,7 @@ from app.utils.jwt import create_subscription_token
 from config import XRAY_SUBSCRIPTION_PATH, XRAY_SUBSCRIPTION_URL_PREFIX
 
 USERNAME_REGEXP = re.compile(r"^(?=\w{3,32}\b)[a-zA-Z0-9-_@.]+(?:_[a-zA-Z0-9-_@.]+)*$")
+MAX_DB_INT = 2_147_483_647
 
 
 class ReminderType(str, Enum):
@@ -54,6 +55,24 @@ class NextPlanModel(BaseModel):
     add_remaining_traffic: bool = False
     fire_on_either: bool = True
     model_config = ConfigDict(from_attributes=True)
+
+    @field_validator("expire", mode="before")
+    def validate_next_plan_expire(cls, v):
+        if v is None:
+            return v
+
+        if isinstance(v, (int, float)):
+            v = int(v)
+        else:
+            raise ValueError("expire must be an integer value")
+
+        if v < 0:
+            raise ValueError("expire cannot be negative")
+
+        if v > MAX_DB_INT:
+            raise ValueError(f"expire cannot be greater than {MAX_DB_INT}")
+
+        return v
 
 
 class User(BaseModel):
@@ -113,10 +132,45 @@ class User(BaseModel):
             raise ValueError("User's note can be a maximum of 500 character")
         return v
 
-    @field_validator("on_hold_expire_duration", "on_hold_timeout", mode="before")
-    def validate_timeout(cls, v, values):
-        # Check if expire is 0 or None and timeout is not 0 or None
-        if (v in (0, None)):
+    @field_validator("expire", mode="before")
+    def validate_expire(cls, v):
+        if v is None:
+            return v
+
+        if isinstance(v, (int, float)):
+            v = int(v)
+        else:
+            raise ValueError("expire must be an integer value")
+
+        if v < 0:
+            raise ValueError("expire cannot be negative")
+
+        if v > MAX_DB_INT:
+            raise ValueError(f"expire cannot be greater than {MAX_DB_INT}")
+
+        return v
+
+    @field_validator("on_hold_expire_duration", mode="before")
+    def validate_on_hold_expire_duration(cls, v):
+        if v in (0, None):
+            return None
+
+        if isinstance(v, (int, float)):
+            v = int(v)
+        else:
+            raise ValueError("on_hold_expire_duration must be an integer value")
+
+        if v < 0:
+            raise ValueError("on_hold_expire_duration cannot be negative")
+
+        if v > MAX_DB_INT:
+            raise ValueError(f"on_hold_expire_duration cannot be greater than {MAX_DB_INT}")
+
+        return v
+
+    @field_validator("on_hold_timeout", mode="before")
+    def validate_on_hold_timeout(cls, v):
+        if v in (0, None):
             return None
         return v
 
