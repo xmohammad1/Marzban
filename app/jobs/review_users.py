@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy.orm import Session
-from sqlalchemy.orm.exc import ObjectDeletedError
 
 from app import logger, scheduler, xray
 from app.db import (GetDB, get_notification_reminder, get_users,
@@ -57,67 +56,63 @@ def review():
     now_ts = now.timestamp()
     with GetDB() as db:
         for user in get_users(db, status=UserStatus.active):
-            try:
-                limited = user.data_limit and user.used_traffic >= user.data_limit
-                expired = user.expire and user.expire <= now_ts
 
-                if (limited or expired) and user.next_plan is not None:
-                    if user.next_plan is not None:
+            limited = user.data_limit and user.used_traffic >= user.data_limit
+            expired = user.expire and user.expire <= now_ts
 
-                        if user.next_plan.fire_on_either:
-                            reset_user_by_next_report(db, user)
-                            continue
+            if (limited or expired) and user.next_plan is not None:
+                if user.next_plan is not None:
 
-                        elif limited and expired:
-                            reset_user_by_next_report(db, user)
-                            continue
+                    if user.next_plan.fire_on_either:
+                        reset_user_by_next_report(db, user)
+                        continue
 
-                if limited:
-                    status = UserStatus.limited
-                elif expired:
-                    status = UserStatus.expired
-                else:
-                    if WEBHOOK_ADDRESS:
-                        add_notification_reminders(db, user, now)
-                    continue
+                    elif limited and expired:
+                        reset_user_by_next_report(db, user)
+                        continue
 
-                xray.operations.remove_user(user)
-                update_user_status(db, user, status)
+            if limited:
+                status = UserStatus.limited
+            elif expired:
+                status = UserStatus.expired
+            else:
+                if WEBHOOK_ADDRESS:
+                    add_notification_reminders(db, user, now)
+                continue
 
-                report.status_change(username=user.username, status=status,
-                                     user=UserResponse.model_validate(user), user_admin=user.admin)
+            xray.operations.remove_user(user)
+            update_user_status(db, user, status)
 
-                logger.info(f"User \"{user.username}\" status changed to {status}")
-            except ObjectDeletedError:
-                logger.warning("Skipping deleted user during review", exc_info=True)
+            report.status_change(username=user.username, status=status,
+                                 user=UserResponse.model_validate(user), user_admin=user.admin)
+
+            logger.info(f"User \"{user.username}\" status changed to {status}")
 
         for user in get_users(db, status=UserStatus.on_hold):
-            try:
-                if user.edit_at:
-                    base_time = datetime.timestamp(user.edit_at)
-                else:
-                    base_time = datetime.timestamp(user.created_at)
 
-                # Check if the user is online After or at 'base_time'
-                if user.online_at and base_time <= datetime.timestamp(user.online_at):
-                    status = UserStatus.active
+            if user.edit_at:
+                base_time = datetime.timestamp(user.edit_at)
+            else:
+                base_time = datetime.timestamp(user.created_at)
 
-                elif user.on_hold_timeout and (datetime.timestamp(user.on_hold_timeout) <= (now_ts)):
-                    # If the user didn't connect within the timeout period, change status to "Active"
-                    status = UserStatus.active
+            # Check if the user is online After or at 'base_time'
+            if user.online_at and base_time <= datetime.timestamp(user.online_at):
+                status = UserStatus.active
 
-                else:
-                    continue
+            elif user.on_hold_timeout and (datetime.timestamp(user.on_hold_timeout) <= (now_ts)):
+                # If the user didn't connect within the timeout period, change status to "Active"
+                status = UserStatus.active
 
-                update_user_status(db, user, status)
-                start_user_expire(db, user)
+            else:
+                continue
 
-                report.status_change(username=user.username, status=status,
-                                     user=UserResponse.model_validate(user), user_admin=user.admin)
+            update_user_status(db, user, status)
+            start_user_expire(db, user)
 
-                logger.info(f"User \"{user.username}\" status changed to {status}")
-            except ObjectDeletedError:
-                logger.warning("Skipping deleted on-hold user during review", exc_info=True)
+            report.status_change(username=user.username, status=status,
+                                 user=UserResponse.model_validate(user), user_admin=user.admin)
+
+            logger.info(f"User \"{user.username}\" status changed to {status}")
 
 
 scheduler.add_job(review, 'interval',
