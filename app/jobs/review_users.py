@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 from app import logger, scheduler, xray
 from app.db import (GetDB, get_notification_reminder, get_users,
                     start_user_expire, update_user_status, reset_user_by_next)
-from app.db.models import User
 from app.models.user import ReminderType, UserResponse, UserStatus
 from app.utils import report
 from app.utils.helpers import (calculate_expiration_days,
@@ -58,12 +57,6 @@ def review():
     with GetDB() as db:
         for user in get_users(db, status=UserStatus.active):
 
-            user_id = user.id
-            user = db.get(User, user_id)
-            if user is None:
-                logger.info("Skipping deleted user during review", extra={"user_id": user_id})
-                continue
-
             limited = user.data_limit and user.used_traffic >= user.data_limit
             expired = user.expire and user.expire <= now_ts
 
@@ -96,12 +89,6 @@ def review():
             logger.info(f"User \"{user.username}\" status changed to {status}")
 
         for user in get_users(db, status=UserStatus.on_hold):
-
-            user_id = user.id
-            user = db.get(User, user_id)
-            if user is None:
-                logger.info("Skipping deleted user during review", extra={"user_id": user_id})
-                continue
 
             if user.edit_at:
                 base_time = datetime.timestamp(user.edit_at)
