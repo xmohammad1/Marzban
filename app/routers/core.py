@@ -56,7 +56,7 @@ async def core_logs(websocket: WebSocket, db: Session = Depends(get_db)):
 
             if not logs:
                 try:
-                    await asyncio.wait_for(websocket.receive(), timeout=0.2)
+                    await asyncio.wait_for(websocket.receive(), timeout=2.0)
                     continue
                 except asyncio.TimeoutError:
                     continue

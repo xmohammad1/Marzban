@@ -128,7 +128,7 @@ async def node_logs(node_id: int, websocket: WebSocket, db: Session = Depends(ge
 
             if not logs:
                 try:
-                    await asyncio.wait_for(websocket.receive(), timeout=0.2)
+                    await asyncio.wait_for(websocket.receive(), timeout=2.0)
                     continue
                 except asyncio.TimeoutError:
                     continue
