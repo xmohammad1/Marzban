@@ -60,6 +60,7 @@ def get_system_stats(
         outgoing_bandwidth=system.downlink,
         incoming_bandwidth_speed=realtime_bandwidth_stats.incoming_bytes,
         outgoing_bandwidth_speed=realtime_bandwidth_stats.outgoing_bytes,
+        total_user_traffic=dbadmin.users_usage if dbadmin and dbadmin.users_usage else 0,
     )
 
 
