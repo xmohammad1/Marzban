@@ -231,7 +231,8 @@ def get_users(db: Session,
               admin: Optional[Admin] = None,
               admins: Optional[List[str]] = None,
               reset_strategy: Optional[Union[UserDataLimitResetStrategy, list]] = None,
-              return_with_count: bool = False) -> Union[List[User], Tuple[List[User], int]]:
+              return_with_count: bool = False,
+              expired_or_limited: bool = False) -> Union[List[User], Tuple[List[User], int]]:
     """
     Retrieves users based on various filters and options.
 
@@ -247,6 +248,7 @@ def get_users(db: Session,
         admins (Optional[List[str]]): List of admin usernames to filter users by.
         reset_strategy (Optional[Union[UserDataLimitResetStrategy, list]]): Data limit reset strategy to filter by.
         return_with_count (bool): Whether to return the total count of users.
+        expired_or_limited (bool): Whether to filter users who are expired or have exceeded their data limit.
 
     Returns:
         Union[List[User], Tuple[List[User], int]]: List of users or tuple of users and total count.
@@ -258,6 +260,14 @@ def get_users(db: Session,
 
     if usernames:
         query = query.filter(User.username.in_(usernames))
+
+    if expired_or_limited:
+        query = query.filter(
+            or_(
+                and_(User.data_limit.isnot(None), User.used_traffic >= User.data_limit),
+                and_(User.expire.isnot(None), User.expire <= datetime.utcnow().timestamp())
+            )
+        )
 
     if status:
         if isinstance(status, list):
