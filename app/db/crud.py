@@ -327,28 +327,30 @@ def get_users_for_review(db: Session, now_ts: float) -> List[User]:
     return query.all()
 
 
-def get_onhold_users_for_review(db: Session, now: datetime) -> List[User]:
+def get_users_onhold_for_review(db: Session, now: datetime) -> List[User]:
     """
-    Retrieves on-hold users who need to be activated.
-
-    This function returns on-hold users who meets either of the following criteria:
-    - User has connected (online_at >= edit_at/created_at)
-    - User's on-hold timeout has passed (on_hold_timeout <= now)
-
+    Retrieves on_hold users who need to be activated.
+    
+    This function returns on_hold users who should be activated because:
+    - They came online: online_at >= base_time (edit_at or created_at)
+    - Or their on_hold_timeout has passed
+    
     Args:
         db (Session): Database session.
         now (datetime): Current datetime to check timeout against.
 
     Returns:
-        List[User]: List of on-hold users who need to be activated.
+        List[User]: List of on_hold users who need to be activated.
     """
     query = get_user_queryset(db).filter(
         User.status == UserStatus.on_hold,
         or_(
+            # User came online after base_time (edit_at or created_at)
             and_(
                 User.online_at.isnot(None),
-                func.coalesce(User.edit_at, User.created_at) <= User.online_at
+                User.online_at >= coalesce(User.edit_at, User.created_at)
             ),
+            # On hold timeout has passed
             and_(
                 User.on_hold_timeout.isnot(None),
                 User.on_hold_timeout <= now

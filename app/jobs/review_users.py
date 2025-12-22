@@ -5,7 +5,8 @@ from sqlalchemy.orm import Session
 
 from app import logger, scheduler, xray
 from app.db import (GetDB, get_notification_reminder, get_users,
-                    get_users_for_review, get_onhold_users_for_review, start_user_expire, update_user_status,
+                    get_users_for_review, get_users_onhold_for_review,
+                    start_user_expire, update_user_status,
                     reset_user_by_next)
 from app.models.user import ReminderType, UserResponse, UserStatus
 from app.utils import report
@@ -93,7 +94,8 @@ def review():
             for user in get_users(db, status=UserStatus.active):
                 add_notification_reminders(db, user, now)
 
-        for user in get_onhold_users_for_review(db, now):
+        # Optimized check for on_hold users who need to be activated
+        for user in get_users_onhold_for_review(db, now):
             status = UserStatus.active
 
             update_user_status(db, user, status)
