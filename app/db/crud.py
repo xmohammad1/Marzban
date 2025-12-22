@@ -327,6 +327,37 @@ def get_users_for_review(db: Session, now_ts: float) -> List[User]:
     return query.all()
 
 
+def get_onhold_users_for_activation(db: Session, now: datetime) -> List[User]:
+    """
+    Retrieves users strictly with 'on_hold' status who meet activation criteria.
+    Criteria:
+    1. User has 'online_at' >= 'edit_at' (or 'created_at' if 'edit_at' is null).
+    2. User has 'on_hold_timeout' <= now.
+
+    Args:
+        db (Session): Database session.
+        now (datetime): Current datetime.
+
+    Returns:
+        List[User]: List of on-hold users who need to be activated.
+    """
+    base_time = func.coalesce(User.edit_at, User.created_at)
+
+    return db.query(User).filter(
+        User.status == UserStatus.on_hold,
+        or_(
+            and_(
+                User.online_at.isnot(None),
+                User.online_at >= base_time
+            ),
+            and_(
+                User.on_hold_timeout.isnot(None),
+                User.on_hold_timeout <= now
+            )
+        )
+    ).all()
+
+
 def get_user_usages(db: Session, dbuser: User, start: datetime, end: datetime) -> List[UserUsageResponse]:
     """
     Retrieves user usages within a specified date range.
