@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
 
-from sqlalchemy import and_, delete, func, or_
+from sqlalchemy import and_, delete, func, inspect, or_, text
 from sqlalchemy.orm import Query, Session, joinedload
 from sqlalchemy.sql.functions import coalesce
 
@@ -59,6 +59,26 @@ def add_default_host(db: Session, inbound: ProxyInbound):
     host = ProxyHost(remark="🚀 Marz ({USERNAME}) [{PROTOCOL} - {TRANSPORT}]", address="{SERVER_IP}", inbound=inbound)
     db.add(host)
     db.commit()
+
+
+def _ensure_template_schema(db: Session):
+    """
+    Ensures the database has the xray templates table and the nodes.template_id column.
+    This is a safety net for environments that haven't applied migrations yet.
+    """
+    bind = db.get_bind()
+    inspector = inspect(bind)
+
+    if "xray_config_templates" not in inspector.get_table_names():
+        XRayConfigTemplate.__table__.create(bind=bind, checkfirst=True)
+
+    node_columns = [col["name"] for col in inspector.get_columns("nodes")]
+    if "template_id" not in node_columns:
+        try:
+            bind.execute(text("ALTER TABLE nodes ADD COLUMN template_id INTEGER"))
+        except Exception:
+            # Another process might have added the column meanwhile or the DB backend may not support this path.
+            pass
 
 
 def get_or_create_inbound(db: Session, inbound_tag: str) -> ProxyInbound:
@@ -1392,6 +1412,8 @@ def get_nodes(db: Session,
     Returns:
         List[Node]: A list of Node objects matching the criteria.
     """
+    _ensure_template_schema(db)
+
     query = db.query(Node)
 
     if status:
