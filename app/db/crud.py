@@ -71,14 +71,22 @@ def _ensure_template_schema(db: Session):
 
     if "xray_config_templates" not in inspector.get_table_names():
         XRayConfigTemplate.__table__.create(bind=bind, checkfirst=True)
+        db.commit()
 
     node_columns = [col["name"] for col in inspector.get_columns("nodes")]
     if "template_id" not in node_columns:
         try:
             bind.execute(text("ALTER TABLE nodes ADD COLUMN template_id INTEGER"))
+            db.commit()
         except Exception:
             # Another process might have added the column meanwhile or the DB backend may not support this path.
+            db.rollback()
             pass
+
+
+def ensure_template_schema(db: Session):
+    """Public helper to ensure template schema exists."""
+    _ensure_template_schema(db)
 
 
 def get_or_create_inbound(db: Session, inbound_tag: str) -> ProxyInbound:

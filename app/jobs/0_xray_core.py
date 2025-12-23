@@ -52,6 +52,7 @@ def start_core():
     # nodes' core
     logger.info("Starting nodes Xray core")
     with GetDB() as db:
+        crud.ensure_template_schema(db)
         dbnodes = crud.get_nodes(db=db, enabled=True)
         node_ids = [dbnode.id for dbnode in dbnodes]
         for dbnode in dbnodes:
