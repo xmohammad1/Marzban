@@ -1,7 +1,7 @@
 """Add xray config templates and node template relation
 
 Revision ID: f3e8b3d5d7f2
-Revises: 2b231de97dc3
+Revises: ('2b231de97dc3', 'ece13c4c6f65', 'e3f0e888a563')
 Create Date: 2025-06-03 00:00:00.000000
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'f3e8b3d5d7f2'
-down_revision = '2b231de97dc3'
+down_revision = ('2b231de97dc3', 'ece13c4c6f65', 'e3f0e888a563')
 branch_labels = None
 depends_on = None
 
@@ -40,4 +40,3 @@ def downgrade() -> None:
     op.drop_constraint('fk_nodes_template_id_xray_config_templates', 'nodes', type_='foreignkey')
     op.drop_column('nodes', 'template_id')
     op.drop_table('xray_config_templates')
-
