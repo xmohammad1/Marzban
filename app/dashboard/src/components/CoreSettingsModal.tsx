@@ -4,10 +4,13 @@ import {
   Button,
   chakra,
   CircularProgress,
+  Divider,
+  Flex,
   FormControl,
   FormLabel,
   HStack,
   IconButton,
+  Input,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -16,10 +19,17 @@ import {
   ModalHeader,
   ModalOverlay,
   Select,
+  SimpleGrid,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
   Text,
   Tooltip,
   useToast,
-  useColorMode
+  useColorMode,
+  VStack,
 } from "@chakra-ui/react";
 import {
   ArrowPathIcon,
@@ -114,6 +124,8 @@ const CoreSettingModalContent: FC = () => {
   const { data: nodes } = useNodesQuery();
   const disabled = false;
   const [selectedNode, setNode] = useState<string>("");
+  const [activeTemplateId, setActiveTemplateId] = useState<number | null>(null);
+  const [isTemplatePosting, setIsTemplatePosting] = useState(false);
 
   const handleLog = (id: string, title: string) => {
     if (id === selectedNode) return;
@@ -135,6 +147,12 @@ const CoreSettingModalContent: FC = () => {
     isPostLoading,
     version,
     restartCore,
+    templates,
+    fetchTemplates,
+    isTemplatesLoading,
+    createTemplate,
+    updateTemplate,
+    deleteTemplate,
   } = useCoreSettings();
   const logsDiv = useRef<HTMLDivElement | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
@@ -143,13 +161,22 @@ const CoreSettingModalContent: FC = () => {
   const form = useForm({
     defaultValues: { config: config || {} },
   });
+  const templateForm = useForm({
+    defaultValues: { name: "", config: config || {} },
+  });
 
   useEffect(() => {
     if (config) form.setValue("config", config);
+    if (!activeTemplateId) {
+      templateForm.setValue("config", config || {});
+    }
   }, [config]);
 
   useEffect(() => {
-    if (isEditingCore) fetchCoreSettings();
+    if (isEditingCore) {
+      fetchCoreSettings();
+      fetchTemplates();
+    }
   }, [isEditingCore]);
   "".startsWith;
   const scrollShouldStayOnEnd = useRef(true);
@@ -201,7 +228,7 @@ const CoreSettingModalContent: FC = () => {
     updateConfig(config)
       .then(() => {
         toast({
-          title: t("core.successMessage"),
+          title: t("xrayConfig.successMessage"),
           status: "success",
           isClosable: true,
           position: "top",
@@ -209,7 +236,7 @@ const CoreSettingModalContent: FC = () => {
         });
       })
       .catch((e) => {
-        let message = t("core.generalErrorMessage");
+        let message = t("xrayConfig.generalErrorMessage");
         if (typeof e.response._data.detail === "object")
           message =
             e.response._data.detail[Object.keys(e.response._data.detail)[0]];
@@ -236,147 +263,391 @@ const CoreSettingModalContent: FC = () => {
       setFullScreen(true);
     }
   };
-  return (
-    <form onSubmit={form.handleSubmit(handleOnSave)}>
-      <ModalBody>
-        <FormControl>
-          <HStack justifyContent="space-between" alignItems="flex-start">
-            <FormLabel>
-              {t("core.configuration")}{" "}
-              {isLoading && <CircularProgress isIndeterminate size="15px" />}
-            </FormLabel>
-            <HStack gap={0}>
-              <Tooltip label="Xray Version" placement="top">
-                <Badge height="100%" textTransform="lowercase">
-                  {version && `v${version}`}
-                </Badge>
-              </Tooltip>
-            </HStack>
-          </HStack>
-          <Box position="relative" ref={editorRef} minHeight="300px">
-            <Controller
-              control={form.control}
-              name="config"
-              render={({ field }) => (
-                <JsonEditor json={config} onChange={field.onChange} />
-              )}
-            />
-            <IconButton
-              size="xs"
-              aria-label="full screen"
-              variant="ghost"
-              position="absolute"
-              top="2"
-              right="4"
-              onClick={handleFullScreen}
-            >
-              {!isFullScreen ? <FullScreenIcon /> : <ExitFullScreenIcon />}
-            </IconButton>
-          </Box>
-        </FormControl>
-        <FormControl mt="4">
-          <HStack
-            justifyContent="space-between"
-            style={{ paddingBottom: "1rem" }}
-          >
-            <HStack>
-              {nodes?.[0] && (
-                <Select
-                  size="sm"
-                  style={{ width: "auto" }}
-                  disabled={disabled}
-                  bg={disabled ? "gray.100" : "transparent"}
-                  _dark={{
-                    bg: disabled ? "gray.600" : "transparent",
-                  }}
-                  sx={{
-                    option: {
-                      backgroundColor: colorMode === "dark" ? "#222C3B" : "white"
-                    }
-                  }}
-                  onChange={(v) =>
-                    handleLog(
-                      v.currentTarget.value,
-                      v.currentTarget.selectedOptions[0].text
-                    )
-                  }
-                >
-                  <option key={"host"} value={"host"} defaultChecked>
-                    Master
-                  </option>
-                  {nodes &&
-                    nodes.map((s) => {
-                      return (
-                        <option key={s.address} value={String(s.id)}>
-                          {t(s.name)}
-                        </option>
-                      );
-                    })}
-                </Select>
-              )}
-              <FormLabel className="w-au">{t("core.logs")}</FormLabel>
-            </HStack>
-            <Text as={FormLabel}>{t(`core.socket.${status}`)}</Text>
-          </HStack>
-          <Box
-            border="1px solid"
-            borderColor="gray.300"
-            bg="#F9F9F9"
-            _dark={{
-              borderColor: "gray.500",
-              bg: "#2e3440",
-            }}
-            borderRadius={5}
-            minHeight="200px"
-            maxHeight={"250px"}
-            p={2}
-            overflowY="auto"
-            ref={logsDiv}
-          >
-            {logs.map((message, i) => (
-              <Text fontSize="xs" opacity={0.8} key={i} whiteSpace="pre-line">
-                {message}
-              </Text>
-            ))}
-          </Box>
-        </FormControl>
-      </ModalBody>
-      <ModalFooter>
-        <HStack w="full" justifyContent="space-between">
-          <HStack>
-            <Box>
-              <Button
-                size="sm"
-                leftIcon={
-                  <ReloadIcon
-                    className={classNames({
-                      "animate-spin": isRestarting,
-                    })}
-                  />
-                }
-                onClick={() => handleRestartCore()}
-              >
-                {t(isRestarting ? "core.restarting" : "core.restartCore")}
-              </Button>
-            </Box>
-          </HStack>
+  const handleSelectTemplate = (id?: number) => {
+    const template = templates?.find((t) => t.id === id);
+    setActiveTemplateId(template?.id ?? null);
+    templateForm.reset({
+      name: template?.name || "",
+      config: template?.config || config || {},
+    });
+  };
 
-          <HStack>
-            <Button
-              size="sm"
-              variant="solid"
-              colorScheme="primary"
-              px="5"
-              type="submit"
-              isDisabled={isLoading || isPostLoading}
-              isLoading={isPostLoading}
-            >
-              {t("core.save")}
-            </Button>
-          </HStack>
-        </HStack>
-      </ModalFooter>
-    </form>
+  const extractErrorMessage = (e: any, fallback: string) => {
+    if (typeof e?.response?._data?.detail === "object") {
+      return (
+        e.response._data.detail[Object.keys(e.response._data.detail)[0]] ||
+        fallback
+      );
+    }
+    if (typeof e?.response?._data?.detail === "string") {
+      return e.response._data.detail;
+    }
+    return fallback;
+  };
+
+  const handleTemplateSave = templateForm.handleSubmit(({ name, config }) => {
+    setIsTemplatePosting(true);
+    const action = activeTemplateId
+      ? updateTemplate(activeTemplateId, { name, config })
+      : createTemplate({ name, config });
+
+    action
+      .then((res: any) => {
+        toast({
+          title: t("xrayConfig.templateSaved"),
+          status: "success",
+          isClosable: true,
+          position: "top",
+          duration: 3000,
+        });
+        if (res?.id && !activeTemplateId) {
+          setActiveTemplateId(res.id);
+        }
+      })
+      .catch((e: any) => {
+        toast({
+          title: extractErrorMessage(e, t("xrayConfig.generalErrorMessage")),
+          status: "error",
+          isClosable: true,
+          position: "top",
+          duration: 3000,
+        });
+      })
+      .finally(() => setIsTemplatePosting(false));
+  });
+
+  const handleTemplateDelete = (id: number) => {
+    if (!window.confirm(t("xrayConfig.deleteConfirm"))) return;
+    setIsTemplatePosting(true);
+    deleteTemplate(id)
+      .then(() => {
+        toast({
+          title: t("xrayConfig.templateDeleted"),
+          status: "success",
+          isClosable: true,
+          position: "top",
+          duration: 2000,
+        });
+        if (activeTemplateId === id) {
+          setActiveTemplateId(null);
+          templateForm.reset({ name: "", config: config || {} });
+        }
+      })
+      .catch((e: any) => {
+        toast({
+          title: extractErrorMessage(e, t("xrayConfig.generalErrorMessage")),
+          status: "error",
+          isClosable: true,
+          position: "top",
+          duration: 3000,
+        });
+      })
+      .finally(() => setIsTemplatePosting(false));
+  };
+
+  return (
+    <Tabs isLazy colorScheme="primary">
+      <TabList px="6">
+        <Tab>{t("xrayConfig.defaultTab")}</Tab>
+        <Tab>{t("xrayConfig.templatesTab")}</Tab>
+      </TabList>
+      <TabPanels>
+        <TabPanel px="0">
+          <form onSubmit={form.handleSubmit(handleOnSave)}>
+            <ModalBody>
+              <FormControl>
+                <HStack justifyContent="space-between" alignItems="flex-start">
+                  <FormLabel>
+                    {t("xrayConfig.configuration")}{" "}
+                    {isLoading && (
+                      <CircularProgress isIndeterminate size="15px" />
+                    )}
+                  </FormLabel>
+                  <HStack gap={0}>
+                    <Tooltip label="Xray Version" placement="top">
+                      <Badge height="100%" textTransform="lowercase">
+                        {version && `v${version}`}
+                      </Badge>
+                    </Tooltip>
+                  </HStack>
+                </HStack>
+                <Box position="relative" ref={editorRef} minHeight="300px">
+                  <Controller
+                    control={form.control}
+                    name="config"
+                    render={({ field }) => (
+                      <JsonEditor json={config} onChange={field.onChange} />
+                    )}
+                  />
+                  <IconButton
+                    size="xs"
+                    aria-label="full screen"
+                    variant="ghost"
+                    position="absolute"
+                    top="2"
+                    right="4"
+                    onClick={handleFullScreen}
+                  >
+                    {!isFullScreen ? <FullScreenIcon /> : <ExitFullScreenIcon />}
+                  </IconButton>
+                </Box>
+              </FormControl>
+              <FormControl mt="4">
+                <HStack
+                  justifyContent="space-between"
+                  style={{ paddingBottom: "1rem" }}
+                >
+                  <HStack>
+                    {nodes?.[0] && (
+                      <Select
+                        size="sm"
+                        style={{ width: "auto" }}
+                        disabled={disabled}
+                        bg={disabled ? "gray.100" : "transparent"}
+                        _dark={{
+                          bg: disabled ? "gray.600" : "transparent",
+                        }}
+                        sx={{
+                          option: {
+                            backgroundColor:
+                              colorMode === "dark" ? "#222C3B" : "white",
+                          },
+                        }}
+                        onChange={(v) =>
+                          handleLog(
+                            v.currentTarget.value,
+                            v.currentTarget.selectedOptions[0].text
+                          )
+                        }
+                      >
+                        <option key={"host"} value={"host"} defaultChecked>
+                          Master
+                        </option>
+                        {nodes &&
+                          nodes.map((s) => {
+                            return (
+                              <option key={s.address} value={String(s.id)}>
+                                {t(s.name)}
+                              </option>
+                            );
+                          })}
+                      </Select>
+                    )}
+                    <FormLabel className="w-au">
+                      {t("xrayConfig.logs")}
+                    </FormLabel>
+                  </HStack>
+                  <Text as={FormLabel}>{t(`xrayConfig.socket.${status}`)}</Text>
+                </HStack>
+                <Box
+                  border="1px solid"
+                  borderColor="gray.300"
+                  bg="#F9F9F9"
+                  _dark={{
+                    borderColor: "gray.500",
+                    bg: "#2e3440",
+                  }}
+                  borderRadius={5}
+                  minHeight="200px"
+                  maxHeight={"250px"}
+                  p={2}
+                  overflowY="auto"
+                  ref={logsDiv}
+                >
+                  {logs.map((message, i) => (
+                    <Text
+                      fontSize="xs"
+                      opacity={0.8}
+                      key={i}
+                      whiteSpace="pre-line"
+                    >
+                      {message}
+                    </Text>
+                  ))}
+                </Box>
+              </FormControl>
+            </ModalBody>
+            <ModalFooter>
+              <HStack w="full" justifyContent="space-between">
+                <HStack>
+                  <Box>
+                    <Button
+                      size="sm"
+                      leftIcon={
+                        <ReloadIcon
+                          className={classNames({
+                            "animate-spin": isRestarting,
+                          })}
+                        />
+                      }
+                      onClick={() => handleRestartCore()}
+                    >
+                      {t(
+                        isRestarting
+                          ? "xrayConfig.restarting"
+                          : "xrayConfig.restartCore"
+                      )}
+                    </Button>
+                  </Box>
+                </HStack>
+
+                <HStack>
+                  <Button
+                    size="sm"
+                    variant="solid"
+                    colorScheme="primary"
+                    px="5"
+                    type="submit"
+                    isDisabled={isLoading || isPostLoading}
+                    isLoading={isPostLoading}
+                  >
+                    {t("xrayConfig.save")}
+                  </Button>
+                </HStack>
+              </HStack>
+            </ModalFooter>
+          </form>
+        </TabPanel>
+        <TabPanel px="0">
+          <ModalBody>
+            <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
+              <Box
+                border="1px solid"
+                borderColor="gray.200"
+                _dark={{ borderColor: "gray.700" }}
+                borderRadius="lg"
+                p={4}
+              >
+                <HStack justifyContent="space-between" mb={3}>
+                  <Text fontWeight="semibold">
+                    {t("xrayConfig.templatesList")}
+                  </Text>
+                  <Button
+                    size="xs"
+                    variant="outline"
+                    onClick={() => handleSelectTemplate()}
+                  >
+                    {t("xrayConfig.newTemplate")}
+                  </Button>
+                </HStack>
+                <Divider mb={3} />
+                <VStack align="stretch" spacing={2}>
+                  {isTemplatesLoading && (
+                    <Text fontSize="sm">{t("xrayConfig.loadingTemplates")}</Text>
+                  )}
+                  {!isTemplatesLoading && templates?.length === 0 && (
+                    <Text fontSize="sm" color="gray.500">
+                      {t("xrayConfig.noTemplate")}
+                    </Text>
+                  )}
+                  {templates?.map((template) => (
+                    <HStack
+                      key={template.id}
+                      justifyContent="space-between"
+                      alignItems="flex-start"
+                      border="1px solid"
+                      borderColor={
+                        activeTemplateId === template.id
+                          ? "primary.500"
+                          : "gray.200"
+                      }
+                      _dark={{
+                        borderColor:
+                          activeTemplateId === template.id
+                            ? "primary.400"
+                            : "gray.700",
+                        bg:
+                          activeTemplateId === template.id
+                            ? "rgba(58, 90, 255, 0.08)"
+                            : "transparent",
+                      }}
+                      borderRadius="md"
+                      p={2}
+                      bg={
+                        activeTemplateId === template.id
+                          ? "primary.50"
+                          : "transparent"
+                      }
+                    >
+                      <Box>
+                        <Text fontWeight="medium">{template.name}</Text>
+                        <Text fontSize="xs" color="gray.500">
+                          {t("xrayConfig.templateUsage", {
+                            count: template.nodes_count || 0,
+                          })}
+                        </Text>
+                      </Box>
+                      <HStack>
+                        <Button
+                          size="xs"
+                          variant="ghost"
+                          onClick={() => handleSelectTemplate(template.id)}
+                        >
+                          {t("xrayConfig.editTemplate")}
+                        </Button>
+                        <Button
+                          size="xs"
+                          colorScheme="red"
+                          variant="ghost"
+                          onClick={() => handleTemplateDelete(template.id)}
+                          isDisabled={isTemplatePosting}
+                        >
+                          {t("delete")}
+                        </Button>
+                      </HStack>
+                    </HStack>
+                  ))}
+                </VStack>
+              </Box>
+              <Box gridColumn={{ md: "span 2" }}>
+                <form onSubmit={handleTemplateSave}>
+                  <FormControl mb={3}>
+                    <FormLabel>{t("xrayConfig.templateName")}</FormLabel>
+                    <Input
+                      placeholder={t("xrayConfig.templateNamePlaceholder")}
+                      {...templateForm.register("name")}
+                    />
+                  </FormControl>
+                  <FormControl>
+                    <HStack justifyContent="space-between" alignItems="center">
+                      <FormLabel>{t("xrayConfig.templateConfig")}</FormLabel>
+                      <Button
+                        size="xs"
+                        variant="ghost"
+                        onClick={() =>
+                          templateForm.setValue("config", config || {})
+                        }
+                      >
+                        {t("xrayConfig.useDefaultConfig")}
+                      </Button>
+                    </HStack>
+                    <Box position="relative" ref={editorRef} minHeight="300px">
+                      <Controller
+                        control={templateForm.control}
+                        name="config"
+                        render={({ field }) => (
+                          <JsonEditor json={field.value} onChange={field.onChange} />
+                        )}
+                      />
+                    </Box>
+                  </FormControl>
+                  <ModalFooter px={0} mt={4}>
+                    <Button
+                      colorScheme="primary"
+                      type="submit"
+                      isLoading={isTemplatePosting}
+                      isDisabled={isTemplatePosting}
+                    >
+                      {t("xrayConfig.saveTemplate")}
+                    </Button>
+                  </ModalFooter>
+                </form>
+              </Box>
+            </SimpleGrid>
+          </ModalBody>
+        </TabPanel>
+      </TabPanels>
+    </Tabs>
   );
 };
 export const CoreSettingsModal: FC = () => {
@@ -394,7 +665,7 @@ export const CoreSettingsModal: FC = () => {
               <UsageIcon color="white" />
             </Icon>
             <Text fontWeight="semibold" fontSize="lg">
-              {t("core.title")}
+              {t("xrayConfig.title")}
             </Text>
           </HStack>
         </ModalHeader>

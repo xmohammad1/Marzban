@@ -22,6 +22,7 @@ class Node(BaseModel):
     port: int = 62050
     api_port: int = 62051
     usage_coefficient: float = Field(gt=0, default=1.0)
+    template_id: Optional[int] = None
 
 
 class NodeCreate(Node):
@@ -45,6 +46,7 @@ class NodeModify(Node):
     api_port: Optional[int] = Field(None, nullable=True)
     status: Optional[NodeStatus] = Field(None, nullable=True)
     usage_coefficient: Optional[float] = Field(None, nullable=True)
+    template_id: Optional[int] = Field(None, nullable=True)
     model_config = ConfigDict(json_schema_extra={
         "example": {
             "name": "DE node",
@@ -52,7 +54,8 @@ class NodeModify(Node):
             "port": 62050,
             "api_port": 62051,
             "status": "disabled",
-            "usage_coefficient": 1.0
+            "usage_coefficient": 1.0,
+            "template_id": 1
         }
     })
 
@@ -62,6 +65,7 @@ class NodeResponse(Node):
     xray_version: Optional[str] = None
     status: NodeStatus
     message: Optional[str] = None
+    template_name: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
 
 

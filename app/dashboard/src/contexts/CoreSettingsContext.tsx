@@ -11,6 +11,15 @@ type CoreSettingsStore = {
   started: boolean | null;
   logs_websocket: string | null;
   config: string;
+  templates: any[];
+  isTemplatesLoading: boolean;
+  fetchTemplates: () => void;
+  createTemplate: (payload: { name: string; config: object }) => Promise<any>;
+  updateTemplate: (
+    id: number,
+    payload: { name?: string; config?: object }
+  ) => Promise<any>;
+  deleteTemplate: (id: number) => Promise<void>;
 };
 
 export const useCoreSettings = create<CoreSettingsStore>((set) => ({
@@ -20,6 +29,8 @@ export const useCoreSettings = create<CoreSettingsStore>((set) => ({
   started: false,
   logs_websocket: null,
   config: "",
+  templates: [],
+  isTemplatesLoading: false,
   fetchCoreSettings: () => {
     set({ isLoading: true });
     Promise.all([
@@ -37,5 +48,33 @@ export const useCoreSettings = create<CoreSettingsStore>((set) => ({
   },
   restartCore: () => {
     return fetch("/core/restart", { method: "POST" });
+  },
+  fetchTemplates: () => {
+    set({ isTemplatesLoading: true });
+    return fetch("/xray/templates")
+      .then((templates) => set({ templates }))
+      .finally(() => set({ isTemplatesLoading: false }));
+  },
+  createTemplate: (payload) => {
+    return fetch("/xray/templates", { method: "POST", body: payload }).then(
+      (res) => {
+        useCoreSettings.getState().fetchTemplates();
+        return res;
+      }
+    );
+  },
+  updateTemplate: (id, payload) => {
+    return fetch(`/xray/templates/${id}`, { method: "PUT", body: payload }).then(
+      (res) => {
+        useCoreSettings.getState().fetchTemplates();
+        return res;
+      }
+    );
+  },
+  deleteTemplate: (id) => {
+    return fetch(`/xray/templates/${id}`, { method: "DELETE" }).then((res) => {
+      useCoreSettings.getState().fetchTemplates();
+      return res;
+    });
   },
 }));

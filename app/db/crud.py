@@ -26,6 +26,7 @@ from app.db.models import (
     ProxyTypes,
     System,
     User,
+    XRayConfigTemplate,
     UserTemplate,
     UserUsageResetLogs,
 )
@@ -42,6 +43,7 @@ from app.models.user import (
     UserUsageResponse,
 )
 from app.models.user_template import UserTemplateCreate, UserTemplateModify
+from app.models.xray_template import XRayConfigTemplateCreate, XRayConfigTemplateUpdate
 from app.utils.helpers import calculate_expiration_days, calculate_usage_percent
 from config import NOTIFY_DAYS_LEFT, NOTIFY_REACHED_USAGE_PERCENT, USERS_AUTODELETE_DAYS
 
@@ -1309,6 +1311,45 @@ def get_user_templates(
     return dbuser_templates.all()
 
 
+def create_xray_template(db: Session, template: XRayConfigTemplateCreate) -> XRayConfigTemplate:
+    db_template = XRayConfigTemplate(
+        name=template.name,
+        config=template.config
+    )
+    db.add(db_template)
+    db.commit()
+    db.refresh(db_template)
+    return db_template
+
+
+def update_xray_template(db: Session, db_template: XRayConfigTemplate, payload: XRayConfigTemplateUpdate) -> XRayConfigTemplate:
+    if payload.name is not None:
+        db_template.name = payload.name
+    if payload.config is not None:
+        db_template.config = payload.config
+    db.commit()
+    db.refresh(db_template)
+    return db_template
+
+
+def remove_xray_template(db: Session, db_template: XRayConfigTemplate):
+    db.query(Node).filter(Node.template_id == db_template.id).update({Node.template_id: None})
+    db.delete(db_template)
+    db.commit()
+
+
+def get_xray_template(db: Session, template_id: int) -> Optional[XRayConfigTemplate]:
+    return db.query(XRayConfigTemplate).options(joinedload(XRayConfigTemplate.nodes)).filter(XRayConfigTemplate.id == template_id).first()
+
+
+def get_xray_templates(db: Session) -> List[XRayConfigTemplate]:
+    return db.query(XRayConfigTemplate).options(joinedload(XRayConfigTemplate.nodes)).all()
+
+
+def get_nodes_by_template(db: Session, template_id: int) -> List[Node]:
+    return db.query(Node).filter(Node.template_id == template_id).all()
+
+
 def get_node(db: Session, name: str) -> Optional[Node]:
     """
     Retrieves a node by its name.
@@ -1418,7 +1459,8 @@ def create_node(db: Session, node: NodeCreate) -> Node:
     dbnode = Node(name=node.name,
                   address=node.address,
                   port=node.port,
-                  api_port=node.api_port)
+                  api_port=node.api_port,
+                  template_id=node.template_id)
 
     db.add(dbnode)
     db.commit()
@@ -1473,8 +1515,11 @@ def update_node(db: Session, dbnode: Node, modify: NodeModify) -> Node:
     else:
         dbnode.status = NodeStatus.connecting
 
-    if modify.usage_coefficient:
+    if modify.usage_coefficient is not None:
         dbnode.usage_coefficient = modify.usage_coefficient
+
+    if modify.template_id is not None:
+        dbnode.template_id = modify.template_id
 
     db.commit()
     db.refresh(dbnode)

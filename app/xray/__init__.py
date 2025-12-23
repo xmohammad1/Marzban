@@ -1,3 +1,4 @@
+from copy import deepcopy
 from random import randint
 from typing import TYPE_CHECKING, Dict, Sequence
 
@@ -67,6 +68,29 @@ def hosts(storage: dict):
             ]
 
 
+def _clone_config_dict(source):
+    if isinstance(source, XRayConfig):
+        return source.copy()
+    return deepcopy(source)
+
+
+def build_default_config():
+    base = _clone_config_dict(config)
+    return XRayConfig(base, api_port=config.api_port).include_db_users()
+
+
+def build_node_config(dbnode):
+    base = _clone_config_dict(config)
+    try:
+        if dbnode.template and dbnode.template.config:
+            base = _clone_config_dict(dbnode.template.config)
+    except AttributeError:
+        pass
+
+    cfg = XRayConfig(base, api_port=config.api_port)
+    return cfg.include_db_users()
+
+
 __all__ = [
     "config",
     "hosts",
@@ -80,4 +104,6 @@ __all__ = [
     "XRayConfig",
     "XRayCore",
     "XRayNode",
+    "build_node_config",
+    "build_default_config",
 ]

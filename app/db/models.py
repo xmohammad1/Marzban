@@ -291,6 +291,21 @@ class TLS(Base):
     certificate = Column(String(2048), nullable=False)
 
 
+class XRayConfigTemplate(Base):
+    __tablename__ = "xray_config_templates"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(256, collation='NOCASE'), unique=True, nullable=False)
+    config = Column(JSON, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    nodes = relationship("Node", back_populates="template")
+
+    @property
+    def nodes_count(self):
+        return len(self.nodes or [])
+
+
 class Node(Base):
     __tablename__ = "nodes"
 
@@ -309,6 +324,12 @@ class Node(Base):
     user_usages = relationship("NodeUserUsage", back_populates="node", cascade="all, delete-orphan")
     usages = relationship("NodeUsage", back_populates="node", cascade="all, delete-orphan")
     usage_coefficient = Column(Float, nullable=False, server_default=text("1.0"), default=1)
+    template_id = Column(Integer, ForeignKey("xray_config_templates.id", ondelete="SET NULL"), nullable=True)
+    template = relationship("XRayConfigTemplate", back_populates="nodes", lazy="joined")
+
+    @property
+    def template_name(self):
+        return self.template.name if self.template else None
 
 
 class NodeUserUsage(Base):

@@ -24,6 +24,7 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
+  Select,
   Switch,
   Text,
   Tooltip,
@@ -70,6 +71,7 @@ import { NodeModalStatusBadge } from "./NodeModalStatusBadge";
 
 import { fetch } from "service/http";
 import { Input } from "./Input";
+import { useTemplatesQuery } from "contexts/XrayTemplatesContext";
 
 const CustomInput = chakra(Input, {
   baseStyle: {
@@ -334,6 +336,7 @@ const NodeForm: NodeFormType = ({
         certificate: string;
       }>("/node/settings"),
   });
+  const { data: templates } = useTemplatesQuery();
   function selectText(node: HTMLElement) {
     // @ts-ignore
     if (document.body.createTextRange) {
@@ -510,6 +513,33 @@ const NodeForm: NodeFormType = ({
             />
           </Box>
         </HStack>
+        <FormControl w="full">
+          <FormLabel fontSize="sm" mb="1">
+            {t("nodes.template")}
+          </FormLabel>
+          <Controller
+            name="template_id"
+            control={form.control}
+            render={({ field }) => (
+              <Select
+                size="sm"
+                placeholder={t("nodes.defaultTemplate")}
+                value={field.value ?? ""}
+                onChange={(event) =>
+                  field.onChange(
+                    event.target.value ? parseInt(event.target.value) : null
+                  )
+                }
+              >
+                {templates?.map((template) => (
+                  <option value={template.id} key={template.id}>
+                    {template.name}
+                  </option>
+                ))}
+              </Select>
+            )}
+          />
+        </FormControl>
         {addAsHost && (
           <FormControl py={1}>
             <Checkbox {...form.register("add_as_new_host")}>

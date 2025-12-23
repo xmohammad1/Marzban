@@ -218,7 +218,7 @@ def connect_node(node_id, config=None):
         logger.info(f"Connecting to \"{dbnode.name}\" node")
 
         if config is None:
-            config = xray.config.include_db_users()
+            config = xray.build_node_config(dbnode)
 
         node.start(config)
         version = node.get_version()
@@ -256,7 +256,7 @@ def restart_node(node_id, config=None):
         logger.info(f"Restarting Xray core of \"{dbnode.name}\" node")
 
         if config is None:
-            config = xray.config.include_db_users()
+            config = xray.build_node_config(dbnode)
 
         node.restart(config)
         logger.info(f"Xray core of \"{dbnode.name}\" node restarted")
