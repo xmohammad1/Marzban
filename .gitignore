@@ -163,14 +163,8 @@ xray-core
 xray/xray_no_window.vbs
 xray/xray_no_window.ps1
 xray/xray_config.json
-xray/README.md
 xray/LICENSE
 xray/geosite.dat
 .gitignore
 xray/geoip.dat
 xray/xray.exe
-.gitignore
-.env.example
-.env.example
-.gitignore
-.gitignore
