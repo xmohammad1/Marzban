@@ -13,6 +13,7 @@ import requests
 import rpyc
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager
+from requests.packages.urllib3.util.retry import Retry
 from websocket import WebSocketConnectionClosedException, WebSocketTimeoutException, create_connection
 
 from app.xray.config import XRayConfig
@@ -28,10 +29,17 @@ def string_to_temp_file(content: str):
 
 class SANIgnoringAdaptor(HTTPAdapter):
     def init_poolmanager(self, connections, maxsize, block=False):
+        retry = Retry(
+            total=3,
+            backoff_factor=1,
+            status_forcelist=[500, 502, 503, 504],
+            raise_on_status=False
+        )
         self.poolmanager = PoolManager(num_pools=connections,
                                        maxsize=maxsize,
                                        block=block,
-                                       assert_hostname=False)
+                                       assert_hostname=False,
+                                       retries=retry)
 
 
 class NodeAPIError(Exception):
@@ -76,6 +84,7 @@ class ReSTXRayNode:
 
         self._api = None
         self._started = False
+        self.failure_count = 0
 
     def _prepare_config(self, config: XRayConfig):
         for inbound in config.get("inbounds", []):
@@ -324,6 +333,7 @@ class RPyCXRayNode:
 
         self._service = Service()
         self._api = None
+        self.failure_count = 0
 
     def disconnect(self):
         try:
@@ -352,7 +362,8 @@ class RPyCXRayNode:
                 self.connection = conn
                 break
             except EOFError as exc:
-                if tries <= 3:
+                if tries <= 10:
+                    time.sleep(1)
                     continue
                 raise exc
 
