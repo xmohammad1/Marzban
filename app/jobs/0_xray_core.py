@@ -27,7 +27,7 @@ def core_health_check():
                 # Retry checking stats to avoid unnecessary restarts
                 for _ in range(3):
                     try:
-                        node.api.get_sys_stats(timeout=10)
+                        node.api.get_sys_stats(timeout=60)
                         break
                     except (ConnectionError, xray_exc.XrayError):
                         time.sleep(1)
