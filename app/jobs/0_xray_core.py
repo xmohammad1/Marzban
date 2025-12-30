@@ -19,16 +19,27 @@ def core_health_check():
 
     # nodes' core
     for node_id, node in list(xray.nodes.items()):
-        if node.connected:
+        is_connected = node.connected
+        if is_connected:
             try:
                 assert node.started
-                node.api.get_sys_stats(timeout=60)
+                
+                # Retry checking stats to avoid unnecessary restarts
+                for _ in range(3):
+                    try:
+                        node.api.get_sys_stats(timeout=10)
+                        break
+                    except (ConnectionError, xray_exc.XrayError):
+                        time.sleep(1)
+                else:
+                    raise ConnectionError("Failed to get sys stats after retries")
+
             except (ConnectionError, xray_exc.XrayError, AssertionError):
                 if not config:
                     config = xray.config.include_db_users()
                 xray.operations.restart_node(node_id, config)
 
-        if not node.connected:
+        if not is_connected:
             if not config:
                 config = xray.config.include_db_users()
             xray.operations.connect_node(node_id, config)
