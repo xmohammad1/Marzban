@@ -128,7 +128,7 @@ class ReSTXRayNode:
         if not self._session_id:
             return False
         try:
-            self.make_request("/ping", timeout=5)
+            self.make_request("/ping", timeout=30)
             return True
         except NodeAPIError:
             return False
