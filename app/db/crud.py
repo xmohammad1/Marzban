@@ -2,11 +2,13 @@
 Functions for managing proxy hosts, users, user templates, nodes, and administrative tasks.
 """
 
+import time
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
 
 from sqlalchemy import and_, delete, func, or_
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Query, Session, joinedload
 from sqlalchemy.sql.functions import coalesce
 
@@ -601,87 +603,121 @@ def update_user(db: Session, dbuser: User, modify: UserModify) -> User:
     return dbuser
 
 
-def reset_user_data_usage(db: Session, dbuser: User) -> User:
+def reset_user_data_usage(db: Session, dbuser: User, max_retries: int = 3) -> User:
     """
     Resets the data usage of a user and logs the reset.
 
     Args:
         db (Session): Database session.
         dbuser (User): The user object whose data usage is to be reset.
+        max_retries (int): Maximum number of retries on deadlock (default: 3).
 
     Returns:
         User: The updated user object.
+
+    Raises:
+        OperationalError: If deadlock persists after max_retries attempts.
     """
-    usage_log = UserUsageResetLogs(
-        user=dbuser,
-        used_traffic_at_reset=dbuser.used_traffic,
-    )
-    db.add(usage_log)
+    for attempt in range(max_retries):
+        try:
+            usage_log = UserUsageResetLogs(
+                user=dbuser,
+                used_traffic_at_reset=dbuser.used_traffic,
+            )
+            db.add(usage_log)
 
-    dbuser.used_traffic = 0
-    dbuser.node_usages.clear()
-    if dbuser.status not in (UserStatus.expired or UserStatus.disabled):
-        dbuser.status = UserStatus.active.value
+            dbuser.used_traffic = 0
+            dbuser.node_usages.clear()
+            if dbuser.status not in (UserStatus.expired or UserStatus.disabled):
+                dbuser.status = UserStatus.active.value
 
-    if dbuser.next_plan:
-        db.delete(dbuser.next_plan)
-        dbuser.next_plan = None
-    db.add(dbuser)
+            if dbuser.next_plan:
+                db.delete(dbuser.next_plan)
+                dbuser.next_plan = None
+            db.add(dbuser)
 
-    db.commit()
-    db.refresh(dbuser)
-    return dbuser
+            db.commit()
+            db.refresh(dbuser)
+            return dbuser
+        except OperationalError as e:
+            db.rollback()
+            # MySQL deadlock error code is 1213
+            if e.orig and hasattr(e.orig, 'args') and e.orig.args[0] == 1213:
+                if attempt < max_retries - 1:
+                    # Exponential backoff: 0.1s, 0.2s, 0.4s
+                    time.sleep(0.1 * (2 ** attempt))
+                    # Refresh the user object after rollback
+                    db.refresh(dbuser)
+                    continue
+            raise
 
 
-def reset_user_by_next(db: Session, dbuser: User) -> User:
+def reset_user_by_next(db: Session, dbuser: User, max_retries: int = 3) -> User:
     """
     Resets the data usage of a user based on next user.
 
     Args:
         db (Session): Database session.
         dbuser (User): The user object whose data usage is to be reset.
+        max_retries (int): Maximum number of retries on deadlock (default: 3).
 
     Returns:
         User: The updated user object.
+
+    Raises:
+        OperationalError: If deadlock persists after max_retries attempts.
     """
 
     if (dbuser.next_plan is None):
         return
 
-    usage_log = UserUsageResetLogs(
-        user=dbuser,
-        used_traffic_at_reset=dbuser.used_traffic,
-    )
-    db.add(usage_log)
+    for attempt in range(max_retries):
+        try:
+            usage_log = UserUsageResetLogs(
+                user=dbuser,
+                used_traffic_at_reset=dbuser.used_traffic,
+            )
+            db.add(usage_log)
 
-    dbuser.node_usages.clear()
-    dbuser.status = UserStatus.active.value
+            dbuser.node_usages.clear()
+            dbuser.status = UserStatus.active.value
 
-    dbuser.data_limit = dbuser.next_plan.data_limit + \
-        (0 if dbuser.next_plan.add_remaining_traffic else dbuser.data_limit - dbuser.used_traffic)
-    # Calculate expire: if value > current timestamp, it's a future timestamp
-    # Otherwise treat as duration and add to current time
-    # Cap at max 32-bit signed int (2147483647) to prevent database overflow
-    MAX_EXPIRE = 2147483647
-    if dbuser.next_plan.expire:
-        now_ts = int(datetime.utcnow().timestamp())
-        if dbuser.next_plan.expire > now_ts:
-            # It's a timestamp (future date)
-            dbuser.expire = min(dbuser.next_plan.expire, MAX_EXPIRE)
-        else:
-            # It's a duration, add to current time
-            dbuser.expire = min(now_ts + dbuser.next_plan.expire, MAX_EXPIRE)
-    else:
-        dbuser.expire = None
+            dbuser.data_limit = dbuser.next_plan.data_limit + \
+                (0 if dbuser.next_plan.add_remaining_traffic else dbuser.data_limit - dbuser.used_traffic)
+            # Calculate expire: if value > current timestamp, it's a future timestamp
+            # Otherwise treat as duration and add to current time
+            # Cap at max 32-bit signed int (2147483647) to prevent database overflow
+            MAX_EXPIRE = 2147483647
+            if dbuser.next_plan.expire:
+                now_ts = int(datetime.utcnow().timestamp())
+                if dbuser.next_plan.expire > now_ts:
+                    # It's a timestamp (future date)
+                    dbuser.expire = min(dbuser.next_plan.expire, MAX_EXPIRE)
+                else:
+                    # It's a duration, add to current time
+                    dbuser.expire = min(now_ts + dbuser.next_plan.expire, MAX_EXPIRE)
+            else:
+                dbuser.expire = None
 
-    dbuser.used_traffic = 0
-    db.delete(dbuser.next_plan)
-    dbuser.next_plan = None
-    db.add(dbuser)
+            dbuser.used_traffic = 0
+            db.delete(dbuser.next_plan)
+            dbuser.next_plan = None
+            db.add(dbuser)
 
-    db.commit()
-    db.refresh(dbuser)
-    return dbuser
+            db.commit()
+            db.refresh(dbuser)
+            return dbuser
+        except OperationalError as e:
+            db.rollback()
+            # MySQL deadlock error code is 1213
+            if e.orig and hasattr(e.orig, 'args') and e.orig.args[0] == 1213:
+                if attempt < max_retries - 1:
+                    # Exponential backoff: 0.1s, 0.2s, 0.4s
+                    time.sleep(0.1 * (2 ** attempt))
+                    # Refresh the user object after rollback
+                    db.refresh(dbuser)
+                    continue
+            raise
 
 
 def revoke_user_sub(db: Session, dbuser: User) -> User:
