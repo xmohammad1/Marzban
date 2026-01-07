@@ -329,7 +329,15 @@ class UserResponse(User):
     def validate_proxies(cls, v, values, **kwargs):
         if isinstance(v, list):
             v = {p.type: p.settings for p in v}
-        return super().validate_proxies(v, values, **kwargs)
+        # For response models, allow empty proxies (legacy users in database)
+        # Don't call parent validator which raises error on empty proxies
+        if not v:
+            return {}
+        return {
+            proxy_type: ProxySettings.from_dict(
+                proxy_type, v.get(proxy_type, {}))
+            for proxy_type in v
+        }
 
     @field_validator("used_traffic", "lifetime_used_traffic", mode='before')
     def cast_to_int(cls, v):
