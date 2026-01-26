@@ -179,6 +179,11 @@ class UserCreate(User):
 
     @field_validator("inbounds", mode="before")
     def validate_inbounds(cls, inbounds, values, **kwargs):
+        if not isinstance(inbounds, dict):
+            raise ValueError(
+                "inbounds must be a dictionary mapping proxy types to lists of inbound tags, "
+                "e.g. {'vmess': ['VMess TCP'], 'vless': ['VLESS TCP REALITY']}"
+            )
         proxies = values.data.get("proxies", [])
 
         # delete inbounds that are for protocols not activated
@@ -263,6 +268,11 @@ class UserModify(User):
         # check with inbounds, "proxies" is optional on modifying
         # so inbounds particularly can be modified
         if inbounds:
+            if not isinstance(inbounds, dict):
+                raise ValueError(
+                    "inbounds must be a dictionary mapping proxy types to lists of inbound tags, "
+                    "e.g. {'vmess': ['VMess TCP'], 'vless': ['VLESS TCP REALITY']}"
+                )
             for proxy_type, tags in inbounds.items():
 
                 # if not tags:
