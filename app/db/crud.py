@@ -283,7 +283,7 @@ def get_users(db: Session,
     if sort:
         query = query.order_by(*(opt.value for opt in sort))
 
-    if offset:
+    if offset is not None and offset > 0:
         query = query.offset(offset)
     if limit:
         query = query.limit(limit)
@@ -1183,7 +1183,7 @@ def get_admins(db: Session,
     query = db.query(Admin)
     if username:
         query = query.filter(Admin.username.ilike(f'%{username}%'))
-    if offset:
+    if offset is not None and offset > 0:
         query = query.offset(offset)
     if limit:
         query = query.limit(limit)
@@ -1317,7 +1317,7 @@ def get_user_templates(
         List[UserTemplate]: A list of user template objects.
     """
     dbuser_templates = db.query(UserTemplate)
-    if offset:
+    if offset is not None and offset > 0:
         dbuser_templates = dbuser_templates.offset(offset)
     if limit:
         dbuser_templates = dbuser_templates.limit(limit)
