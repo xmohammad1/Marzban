@@ -326,6 +326,32 @@ def get_users_for_review(db: Session, now_ts: float) -> List[User]:
     )
     return query.all()
 
+def get_users_for_notification(db: Session, now_ts: float, max_days_lookahead: float) -> List[User]:
+    """
+    Retrieves active users who are eligible for notification reminders.
+
+    Args:
+        db (Session): Database session.
+        now_ts (float): Current timestamp to check expiration and usage against.
+
+    Returns:
+        List[User]: List of active users eligible for notification reminders.
+    """
+    query = get_user_queryset(db).filter(
+        User.status == UserStatus.active,
+        or_(
+            # Has data limit and is close to reaching it
+            User.data_limit.isnot(None)
+            ,
+            # Has expire date and is close to expiring
+            and_(
+                User.expire.isnot(None),
+                User.expire.between(now_ts, now_ts + max_days_lookahead)  # Within max_days_lookahead
+            )
+        )
+    )
+    return query.all()
+
 
 def get_onhold_users_for_review(db: Session, now: datetime) -> List[User]:
     """
